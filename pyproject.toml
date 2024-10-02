@@ -1,0 +1,27 @@
+[project]
+name = "usps"
+dynamic = ["version"]
+description = "A CLI for tracking packages from USPS."
+authors = [
+    { name = "iiPython", email = "ben@iipython.dev" }
+]
+dependencies = [
+    "click>=8.1.7",
+    "rich>=13.8.1",
+    "selenium>=4.25.0",
+]
+readme = "README.md"
+requires-python = ">=3.10"
+
+[project.scripts]
+usps = "usps.__main__:usps"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "usps/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["usps"]
