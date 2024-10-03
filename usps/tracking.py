@@ -18,16 +18,16 @@ class NonExistantPackage(Exception):
 # Typing
 @dataclass
 class Step:
-    Details: str
-    Location: str
-    Time: datetime
+    details: str
+    location: str
+    time: datetime
 
 @dataclass
 class Package:
-    ExpectedDelivery: datetime | None
-    LastStatus: str
-    State: str
-    Steps: list[Step]
+    expected: datetime | None
+    last_status: str
+    state: str
+    steps: list[Step]
 
 # Mappings
 USPS_STEP_DETAIL_MAPPING = {
