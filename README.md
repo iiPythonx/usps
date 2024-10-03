@@ -33,5 +33,10 @@ usps track
 ### Inspiration
 
 I tried to make a basic web scraper for the USPS website months ago, only to find out that its security is crazy.  
-Instead of trying to reverse engineer their client, this script generates cookies using Selenium and then uses requests
-and BeautifulSoup to make the request and parse the result.
+Instead of trying to reverse engineer their client, I made this instead.
+
+How it works:
+- Selenium goes to the USPS tracking website, completing the JS challenge and logging the request data
+- This client saves that request data to a JSON file for reuse (speeds up the client dramatically)
+- Next, requests pulls the page from USPS using our saved cookies and parses it with BeautifulSoup
+- Apply some basic scraping and there you go, a USPS tracking client

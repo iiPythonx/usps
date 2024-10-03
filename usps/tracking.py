@@ -71,7 +71,7 @@ class USPSTracking():
         lines = text.split("\n")
         return " ".join(lines[:(2 if "\t" in lines[0] else 1)]).replace("\t", "").strip()
 
-    def __generate_security(self, url: str) -> None:
+    def __generate_security(self, url: str) -> str:
         with Status("[cyan]Generating cookies...", spinner = "arc"):
             options = Options()
             options.add_argument("--headless")
@@ -87,26 +87,26 @@ class USPSTracking():
                     security.save({"headers": dict(self.headers), "cookies": self.cookies})
                     break
 
+            html = instance.page_source  # This saves us a request
             instance.quit()
+            return html
 
     def track_package(self, tracking_number: str) -> Package:
         url = f"https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1={tracking_number}"
 
-        # Handle generating cookies / headers
-        if not self.cookies:
-            self.__generate_security(url)
-
         # Load data from page
-        page = BeautifulSoup(
-            self.session.get(url, cookies = self.cookies, headers = self.headers).text,
-            "html.parser"
-        )
-        if "originalHeaders" in str(page):
-            self.__generate_security(url)
+        if not self.cookies:
+
+            # Handle generating cookies / headers
+            page = BeautifulSoup(self.__generate_security(url), "html.parser")
+
+        else:
             page = BeautifulSoup(
                 self.session.get(url, cookies = self.cookies, headers = self.headers).text,
                 "html.parser"
             )
+            if "originalHeaders" in str(page):
+                page = BeautifulSoup(self.__generate_security(url), "html.parser")
 
         # Check header for possible issues
         if page.find(attrs = {"class": "red-banner"}):
