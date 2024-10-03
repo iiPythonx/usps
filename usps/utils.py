@@ -67,11 +67,16 @@ def pluralize(item: int) -> str:
 def get_delta(location: str, time: datetime) -> str:
 
     # Calculate the timezone for the given location
-    state = location.encode().replace(b"\xc2\xa0", b" ").split(b" ")[1].decode()
+    state = None
+    chunks = location.encode().replace(b"\xc2\xa0", b" ").decode().split(" ")
+    for chunk in chunks:
+        if chunk in TIMEZONE_MAPPING:
+            state = chunk
+
     if state in TIMEZONE_MAPPING:
         time = time.replace(tzinfo = TIMEZONE_MAPPING[state]).astimezone(LOCAL_TIMEZONE)
 
-    delta = datetime.now(timezone(timedelta(seconds = localtime().tm_gmtoff))) - time
+    delta = datetime.now(LOCAL_TIMEZONE) - time
 
     # Figure out delta
     delta_minutes = delta.seconds // 60
