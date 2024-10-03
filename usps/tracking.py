@@ -44,7 +44,10 @@ USPS_STEP_DETAIL_MAPPING = {
     "departed usps regional facility": "Left Facility",
     "departed post office": "Left Office",
     "usps in possession of item": "Possessed",
-    "arrived at post office": "At Office"
+    "arrived at post office": "At Office",
+    "out for delivery": "Delivering",
+    "in transit to next facility": "In Transit",
+    "arriving on time": "Package On Time"
 }
 
 # Main class
@@ -137,6 +140,23 @@ class USPSTracking():
         if has_delivery_date:
             times = page.find(attrs = {"class": "time"}).find(text = True, recursive = False).split(" and ")
 
+        # Fetch steps
+        steps = []
+        for step in page.find_all(attrs = {"class": "tb-step"}):
+            if "toggle-history-container" not in step["class"]:
+                location = step.find(attrs = {"class": "tb-location"})
+                if location is not None:
+                    location = location.text.strip()
+
+                steps.append(Step(
+                    self.__map_step_details(step.find(attrs = {"class": "tb-status-detail"}).text),
+                    location or "UNKNOWN LOCATION",
+                    datetime.strptime(
+                        self.__sanitize(step.find(attrs = {"class": "tb-date"}).text),
+                        "%B %d, %Y, %I:%M %p"
+                    )
+                ))
+
         # Bundle together
         return Package(
 
@@ -152,19 +172,8 @@ class USPSTracking():
             # Current state based on current step
             current_step,
 
-            # Fetch ALL steps
-            [
-                Step(
-                    self.__map_step_details(step.find(attrs = {"class": "tb-status-detail"}).text),
-                    step.find(attrs = {"class": "tb-location"}).text.strip(),
-                    datetime.strptime(
-                        self.__sanitize(step.find(attrs = {"class": "tb-date"}).text),
-                        "%B %d, %Y, %I:%M %p"
-                    )
-                )
-                for step in page.find_all(attrs = {"class": "tb-step"})
-                if "toggle-history-container" not in step["class"]
-            ]
+            # Step data
+            steps
         )
 
 tracking = USPSTracking()

@@ -13,7 +13,7 @@ from usps.tracking import Package
 from .utils import get_delta
 
 # Initialization
-app = typer.Typer(help = "A CLI for tracking packages from USPS.")
+app = typer.Typer(help = "A CLI for tracking packages from USPS.", pretty_exceptions_show_locals = False)
 con = Console(highlight = False)
 
 # Handle commands
@@ -34,7 +34,11 @@ def show_package(tracking_number: str, package: Package) -> None:
             con.print(f"\t[green]Estimated delivery on {date} between {times[0]} and {times[1]}.[/]")
 
     else:
-        con.print("\t[red]No estimated delivery time yet.[/]")
+        if package.state == "Delivered":
+            con.print("\t[green]This package has been delivered.[/]")
+
+        else:
+            con.print("\t[red]No estimated delivery time yet.[/]")
 
     con.print(*[f"\t[yellow]{line}[/]" for line in textwrap.wrap(package.last_status, 102)], "", sep = "\n")
 

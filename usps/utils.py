@@ -77,8 +77,11 @@ def get_delta(location: str, time: datetime) -> str:
         original_time = time.replace(tzinfo = TIMEZONE_MAPPING[state])
         time = original_time.astimezone(LOCAL_TIMEZONE)
 
+    else:
+        time = time.astimezone(LOCAL_TIMEZONE)
+
     delta = datetime.now(LOCAL_TIMEZONE) - time
-    time_string = f"{time.strftime('%D %H:%M:%S')} {(original_time or datetime.now()).strftime('%Z')}"
+    time_string = f"{time.strftime('%D %H:%M:%S')} {original_time.strftime('%Z') if original_time else 'N/A'}"
 
     # Figure out delta
     delta_minutes = delta.seconds // 60
