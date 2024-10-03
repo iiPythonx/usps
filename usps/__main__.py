@@ -2,11 +2,14 @@
 
 # Modules
 import json
-from signal import default_int_handler
-import typing
+import textwrap
 from pathlib import Path
 
 import click
+from rich.console import Console
+
+from .commands import usps, DefaultCommandGroup
+from .commands.utils import get_delta
 
 # Handle saving/loading current packages
 package_file = Path.home() / ".local/share/usps/packages.json"
@@ -21,55 +24,52 @@ def load_packages() -> list[str]:
 def save_packages(packages: list[str]) -> None:
     package_file.write_text(json.dumps(packages, indent = 4))
 
-# Click setup
-class DefaultCommandGroup(click.Group):
-    default_command: str
-
-    def command(self, *args, **kwargs) -> typing.Callable:  # type: ignore
-        default_command = kwargs.pop("default_command", False)
-        if default_command and not args:
-            kwargs["name"] = kwargs.get("name", "<>")
-
-        decorator = super(DefaultCommandGroup, self).command(*args, **kwargs)
-        if default_command:
-            def new_decorator(func: typing.Callable) -> typing.Callable:
-                cmd = decorator(func)
-                if cmd.name is None:
-                    return cmd
-
-                self.default_command = cmd.name
-                return cmd
-
-            return new_decorator
-
-        return decorator
-
-    def resolve_command(self, ctx, args) -> tuple:
-        try:
-            return super(DefaultCommandGroup, self).resolve_command(ctx, args)
-
-        except click.UsageError:
-            args.insert(0, self.default_command)
-            return super(DefaultCommandGroup, self).resolve_command(ctx, args)
-
-@click.group(cls = DefaultCommandGroup, epilog = "Copyright (c) 2024 iiPython")
-def usps() -> None:
-    """A CLI for tracking packages from USPS.
-    
-    \b
-    USPS site  : https://usps.com
-    Source code: https://github.com/iiPythonx/usps"""
-    return
+# Initialization
+con = Console(highlight = False)
 
 # Handle commands
-@usps.group(cls = DefaultCommandGroup, default_command = True)
+@usps.group(cls = DefaultCommandGroup, name = "track", default_group = True)
 def track() -> None:
     return
 
+def show_package(tracking_number: str) -> None:
+    from .tracking import tracking
+
+    package = tracking.track_package(tracking_number)
+    con.print(f"°︎ USPS [bright_blue]{tracking_number}[/] - [cyan]{package.State}[/]")
+
+    if package.ExpectedDelivery:
+        def ordinal(day: int) -> str:
+            return str(day) + ("th" if 4 <= day % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th"))
+
+        time = package.ExpectedDelivery.strftime("%A, %B {day} by %I:%M %p").format(day = ordinal(package.ExpectedDelivery.day))
+        con.print(f"\t[green]Estimated delivery on {time}.[/]")
+
+    else:
+        con.print("\t[red]No estimated delivery time yet.[/]")
+
+    con.print(*[f"\t[yellow]{line}[/]" for line in textwrap.wrap(package.LastStatus, 102)], "", sep = "\n")
+    for step in package.Steps:
+        con.print(f"\t[cyan]{step.Details}[/]\t[yellow]{step.Location}[/]\t[bright_blue]{get_delta(step.Time)}[/]")
+
+    print()
+
 @track.command("show", default_command = True)
-def show() -> None:
-    print("this is show")
+@click.argument("tracking-number", required = False)
+def command_show(tracking_number: str | None) -> None:
+    if tracking_number is not None:
+        return show_package(tracking_number)
+
+    packages = load_packages()
+    if not packages:
+        return con.print("[red]× You don't have any default packages to track.[/]")
+
+    for package in packages:
+        show_package(package)
 
 @track.command("add")
-def add() -> None:
-    print("this is add")
+@click.argument("tracking-numbers", nargs = -1)
+def command_add(tracking_numbers: tuple[str]) -> None:
+    save_packages(load_packages() + list(tracking_numbers))
+    for tracking_number in tracking_numbers:
+        con.print(f"[green]✓ USPS {tracking_number} added to your package list.[/]")
