@@ -6,8 +6,11 @@ authors = [
     { name = "iiPython", email = "ben@iipython.dev" }
 ]
 dependencies = [
+    "beautifulsoup4>=4.12.3",
+    "blinker==1.7.0",
     "click>=8.1.7",
     "rich>=13.8.1",
+    "selenium-wire>=5.1.0",
     "selenium>=4.25.0",
 ]
 readme = "README.md"

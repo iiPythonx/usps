@@ -1,30 +1,16 @@
 # Copyright (c) 2024 iiPython
 
 # Modules
-import json
 import textwrap
-from pathlib import Path
 
 import click
 from rich.console import Console
 
+from usps.storage import packages
 from usps.tracking import Package
 
 from .commands import usps, DefaultCommandGroup
 from .commands.utils import get_delta
-
-# Handle saving/loading current packages
-package_file = Path.home() / ".local/share/usps/packages.json"
-package_file.parent.mkdir(exist_ok = True, parents = True)
-
-def load_packages() -> list[str]:
-    if not package_file.is_file():
-        return []
-
-    return json.loads(package_file.read_text())
-
-def save_packages(packages: list[str]) -> None:
-    package_file.write_text(json.dumps(packages, indent = 4))
 
 # Initialization
 con = Console(highlight = False)
@@ -60,16 +46,16 @@ def command_show(tracking_number: str | None) -> None:
     if tracking_number is not None:
         return show_package(tracking_number, tracking.track_package(tracking_number))
 
-    packages = load_packages()
-    if not packages:
+    tracking_numbers = packages.load()
+    if not tracking_numbers:
         return con.print("[red]× You don't have any default packages to track.[/]")
 
-    for package in packages:
+    for package in tracking_numbers:
         show_package(package, tracking.track_package(package))
 
 @group_track.command("add")
 @click.argument("tracking-numbers", nargs = -1)
 def command_add(tracking_numbers: tuple[str]) -> None:
-    save_packages(load_packages() + list(tracking_numbers))
+    packages.save(packages.load() + list(tracking_numbers))
     for tracking_number in tracking_numbers:
         con.print(f"[green]✓ USPS {tracking_number} added to your package list.[/]")
