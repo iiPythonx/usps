@@ -65,18 +65,20 @@ def pluralize(item: int) -> str:
     return "s" if item > 1 else ""
 
 def get_delta(location: str, time: datetime) -> str:
+    state, original_time = None, None
 
     # Calculate the timezone for the given location
-    state = None
     chunks = location.encode().replace(b"\xc2\xa0", b" ").decode().split(" ")
     for chunk in chunks:
         if chunk in TIMEZONE_MAPPING:
             state = chunk
 
     if state in TIMEZONE_MAPPING:
-        time = time.replace(tzinfo = TIMEZONE_MAPPING[state]).astimezone(LOCAL_TIMEZONE)
+        original_time = time.replace(tzinfo = TIMEZONE_MAPPING[state])
+        time = original_time.astimezone(LOCAL_TIMEZONE)
 
     delta = datetime.now(LOCAL_TIMEZONE) - time
+    time_string = f"{time.strftime('%D %H:%M:%S')} {(original_time or datetime.now()).strftime('%Z')}"
 
     # Figure out delta
     delta_minutes = delta.seconds // 60
@@ -92,13 +94,13 @@ def get_delta(location: str, time: datetime) -> str:
 
     # Process each item
     if delta.days:
-        return f"{delta.days} day{pluralize(delta.days)} ago\t({time})"
+        return f"{delta.days} day{pluralize(delta.days)} ago\t({time_string})"
 
     elif delta_hours:
-        return f"{delta_hours} hour{pluralize(delta_hours)} ago\t({time})"
+        return f"{delta_hours} hour{pluralize(delta_hours)} ago\t({time_string})"
 
     elif delta_minutes:
-        return f"{delta_minutes} minute{pluralize(delta_minutes)} ago\t({time})"
+        return f"{delta_minutes} minute{pluralize(delta_minutes)} ago\t({time_string})"
 
     else:
-        return f"{delta.seconds} second{pluralize(delta.seconds)} ago\t({time})"
+        return f"{delta.seconds} second{pluralize(delta.seconds)} ago\t({time_string})"
