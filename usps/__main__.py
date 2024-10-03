@@ -29,7 +29,7 @@ con = Console(highlight = False)
 
 # Handle commands
 @usps.group(cls = DefaultCommandGroup, name = "track", default_group = True)
-def track() -> None:
+def group_track() -> None:
     return
 
 def show_package(tracking_number: str) -> None:
@@ -54,7 +54,7 @@ def show_package(tracking_number: str) -> None:
 
     print()
 
-@track.command("show", default_command = True)
+@group_track.command("show", default_command = True)
 @click.argument("tracking-number", required = False)
 def command_show(tracking_number: str | None) -> None:
     if tracking_number is not None:
@@ -67,7 +67,7 @@ def command_show(tracking_number: str | None) -> None:
     for package in packages:
         show_package(package)
 
-@track.command("add")
+@group_track.command("add")
 @click.argument("tracking-numbers", nargs = -1)
 def command_add(tracking_numbers: tuple[str]) -> None:
     save_packages(load_packages() + list(tracking_numbers))

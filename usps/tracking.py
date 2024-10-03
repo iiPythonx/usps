@@ -40,7 +40,7 @@ USPS_STEP_DETAIL_MAPPING = {
 class USPSTracking():
     def __init__(self) -> None:
         options = Options()
-        options.headless = True  # type: ignore
+        options.add_argument("--headless")
 
         self.instance = webdriver.Firefox(options)
         atexit.register(self.instance.quit)
@@ -112,8 +112,8 @@ class USPSTracking():
             # Fetch ALL steps
             [
                 Step(
-                    self.__map_step_details(step.find_element(By.CLASS_NAME, "tb-status-detail").text),
-                    step.find_element(By.CLASS_NAME, "tb-location").text.strip(),
+                    self.__map_step_details(step.find_element(By.CLASS_NAME, "tb-status-detail").get_attribute("innerText")),  # type: ignore
+                    step.find_element(By.CLASS_NAME, "tb-location").get_attribute("innerText").strip(),  # type: ignore
                     datetime.strptime(
                         self.__sanitize(step.find_element(By.CLASS_NAME, "tb-date").get_attribute("innerText")),  # type: ignore
                         "%B %d, %Y, %I:%M %p"
