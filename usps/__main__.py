@@ -9,11 +9,19 @@ from rich.console import Console
 from usps.storage import packages
 from usps.tracking import Package
 
-from .commands import usps
-from .commands.utils import get_delta
+from .utils import get_delta
 
 # Initialization
 con = Console(highlight = False)
+
+@click.group(epilog = "Copyright (c) 2024 iiPython")
+def usps() -> None:
+    """A CLI for tracking packages from USPS.
+    
+    \b
+    USPS site   : https://usps.com
+    Source code : https://github.com/iiPythonx/usps"""
+    return
 
 # Handle commands
 def show_package(tracking_number: str, package: Package) -> None:
@@ -34,7 +42,7 @@ def show_package(tracking_number: str, package: Package) -> None:
 
     print()
 
-@usps.command("track", default_command = True)
+@usps.command("track")
 @click.argument("tracking-number", required = False)
 def command_track(tracking_number: str | None) -> None:
     """Track the specified tracking numbers, tracking your package list if no tracking
