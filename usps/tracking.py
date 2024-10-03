@@ -33,7 +33,9 @@ class Package:
 USPS_STEP_DETAIL_MAPPING = {
     "usps picked up item": "Picked Up",
     "usps awaiting item": "Awaiting Item",
-    "arrived at usps regional origin facility": "At Facility"
+    "arrived at usps regional origin facility": "At Facility",
+    "departed usps regional facility": "Left Facility",
+    "departed post office": "Left Office"
 }
 
 # Main class
@@ -47,9 +49,9 @@ class USPSTracking():
 
     def __map_step_details(self, details: str) -> str:
         details = details.split(", ")[-1].lower()
-        return " ".join([
-            word.capitalize() for word in USPS_STEP_DETAIL_MAPPING.get(details, details).split(" ")
-        ])
+        return USPS_STEP_DETAIL_MAPPING.get(details, " ".join([
+            word.capitalize() for word in details.split(" ")
+        ]))
     
     def __sanitize(self, text: str) -> str:
         lines = text.split("\n")
