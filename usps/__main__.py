@@ -1,9 +1,10 @@
 # Copyright (c) 2024 iiPython
 
 # Modules
+import typing
 import textwrap
 
-import click
+import typer
 from rich.console import Console
 
 from usps.storage import packages
@@ -12,16 +13,8 @@ from usps.tracking import Package
 from .utils import get_delta
 
 # Initialization
+app = typer.Typer(help = "A CLI for tracking packages from USPS.")
 con = Console(highlight = False)
-
-@click.group(epilog = "Copyright (c) 2024 iiPython")
-def usps() -> None:
-    """A CLI for tracking packages from USPS.
-    
-    \b
-    USPS site   : https://usps.com
-    Source code : https://github.com/iiPythonx/usps"""
-    return
 
 # Handle commands
 def show_package(tracking_number: str, package: Package) -> None:
@@ -42,9 +35,8 @@ def show_package(tracking_number: str, package: Package) -> None:
 
     print()
 
-@usps.command("track")
-@click.argument("tracking-number", required = False)
-def command_track(tracking_number: str | None) -> None:
+@app.command("track")
+def command_track(tracking_number: typing.Annotated[typing.Optional[str], typer.Argument()] = None) -> None:
     """Track the specified tracking numbers, tracking your package list if no tracking
     number is specified."""
 
@@ -60,17 +52,15 @@ def command_track(tracking_number: str | None) -> None:
     for package in tracking_numbers:
         show_package(package, tracking.track_package(package))
 
-@usps.command("add")
-@click.argument("tracking-numbers", nargs = -1)
-def command_add(tracking_numbers: tuple[str]) -> None:
+@app.command("add")
+def command_add(tracking_numbers: list[str]) -> None:
     """Add tracking numbers to your package list."""
     packages.save(packages.load() + list(tracking_numbers))
     for tracking_number in tracking_numbers:
         con.print(f"[green]✓ USPS {tracking_number} added to your package list.[/]")
 
-@usps.command("remove")
-@click.argument("tracking-numbers", nargs = -1)
-def command_remove(tracking_numbers: tuple[str]) -> None:
+@app.command("remove")
+def command_remove(tracking_numbers: list[str]) -> None:
     """Remove tracking numbers from your package list."""
     current_packages = packages.load()
     for tracking_number in tracking_numbers:

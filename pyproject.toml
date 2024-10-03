@@ -13,12 +13,13 @@ dependencies = [
     "selenium-wire>=5.1.0",
     "selenium>=4.25.0",
     "setuptools>=75.1.0",
+    "typer>=0.12.5",
 ]
 readme = "README.md"
 requires-python = ">=3.10"
 
 [project.scripts]
-usps = "usps.__main__:usps"
+usps = "usps.__main__:app"
 
 [build-system]
 requires = ["hatchling"]
