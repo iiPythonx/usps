@@ -23,8 +23,13 @@ def show_package(tracking_number: str, package: Package) -> None:
         def ordinal(day: int) -> str:
             return str(day) + ("th" if 4 <= day % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th"))
 
-        time = package.expected.strftime("%A, %B {day} by %I:%M %p").format(day = ordinal(package.expected.day))
-        con.print(f"\t[green]Estimated delivery on {time}.[/]")
+        date = package.expected[0].strftime("%A, %B {day}").format(day = ordinal(package.expected[0].day))
+        times = [time.strftime("%I:%M %p") for time in package.expected]
+        if len(package.expected) == 1:
+            con.print(f"\t[green]Estimated delivery on {date} by {times[0]}.[/]")
+
+        else:
+            con.print(f"\t[green]Estimated delivery on {date} between {times[0]} and {times[1]}.[/]")
 
     else:
         con.print("\t[red]No estimated delivery time yet.[/]")

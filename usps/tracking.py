@@ -30,7 +30,7 @@ class Step:
 
 @dataclass
 class Package:
-    expected: datetime | None
+    expected: list[datetime] | None
     last_status: str
     state: str
     steps: list[Step]
@@ -40,8 +40,11 @@ USPS_STEP_DETAIL_MAPPING = {
     "usps picked up item": "Picked Up",
     "usps awaiting item": "Awaiting Item",
     "arrived at usps regional origin facility": "At Facility",
+    "arrived at usps regional facility": "At Facility",
     "departed usps regional facility": "Left Facility",
-    "departed post office": "Left Office"
+    "departed post office": "Left Office",
+    "usps in possession of item": "Possessed",
+    "arrived at post office": "At Office"
 }
 
 # Main class
@@ -56,6 +59,9 @@ class USPSTracking():
             self.headers, self.cookies = security_data["headers"], security_data["cookies"]
 
     def __map_step_details(self, details: str) -> str:
+        if "between" in details.lower():
+            return "Delivering"
+
         details = details.split(", ")[-1].lower()
         return USPS_STEP_DETAIL_MAPPING.get(details, " ".join([
             word.capitalize() for word in details.split(" ")
@@ -127,16 +133,18 @@ class USPSTracking():
         else:
             current_step = page.find(attrs = {"class": "current-step"}).find(attrs = {"class": "tb-status"}).text
 
+        # Figure out delivery times
+        if has_delivery_date:
+            times = page.find(attrs = {"class": "time"}).find(text = True, recursive = False).split(" and ")
+
         # Bundle together
         return Package(
 
             # Estimated delivery
-            datetime.strptime(" ".join([
-                page.find(attrs = {"class": "date"}).text.zfill(2),
-                month,
-                year,
-                page.find(attrs = {"class": "time"}).find(text = True, recursive = False)
-            ]), "%d %B %Y %I:%M%p") if has_delivery_date else None,
+            [
+                datetime.strptime(f"{page.find(attrs = {'class': 'date'}).text.zfill(2)} {month} {year} {time}", "%d %B %Y %I:%M%p")
+                for time in times
+            ] if has_delivery_date else None,
 
             # Last status "banner"
             page.find(attrs = {"class": "banner-content"}).text.strip(),
