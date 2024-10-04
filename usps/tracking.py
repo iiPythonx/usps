@@ -47,7 +47,8 @@ USPS_STEP_DETAIL_MAPPING = {
     "arrived at post office": "At Office",
     "out for delivery": "Delivering",
     "in transit to next facility": "In Transit",
-    "arriving on time": "Package On Time"
+    "arriving on time": "Package On Time",
+    "accepted at usps origin facility": "Accepted"
 }
 
 # Main class

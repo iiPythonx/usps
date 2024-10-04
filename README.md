@@ -30,6 +30,13 @@ Show all your current packages:
 usps track
 ```
 
+### Requirements
+
+Since this package uses selenium for challenge solving, you'll need to install a [Firefox-compatible browser](https://www.mozilla.org/en-US/firefox) and [geckodriver](https://github.com/mozilla/geckodriver/releases).  
+Feel free to modify the code to use Chromium instead if you prefer it.
+
+If you're on Arch: `sudo pacman -S firefox geckodriver`,
+
 ### Inspiration
 
 I tried to make a basic web scraper for the USPS website months ago, only to find out that its security is crazy.  
