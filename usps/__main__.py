@@ -10,6 +10,7 @@ from rich.console import Console
 from usps.storage import packages
 from usps.tracking import Package
 
+from . import __version__
 from .utils import get_delta
 
 # Initialization
@@ -116,3 +117,8 @@ def command_name(
         con.print(f"[green]✓ USPS {tracking_number} updated with name [cyan]'{name}'[/].[/]")
 
     packages.save(original_packages | {tracking_number: name})
+
+@app.command("version")
+def command_version() -> None:
+    """Show the package version."""
+    con.print(f"[cyan]USPS-cli v{__version__} by iiPython[/]\n -> [yellow]https://github.com/iiPythonx/usps")
