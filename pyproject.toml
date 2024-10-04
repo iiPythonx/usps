@@ -25,8 +25,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/iiPythonx/lrcup"
-Issues = "https://github.com/iiPythonx/lrcup/issues"
+Homepage = "https://github.com/iiPythonx/usps"
+Issues = "https://github.com/iiPythonx/usps/issues"
 
 [project.scripts]
 usps = "usps.__main__:app"
