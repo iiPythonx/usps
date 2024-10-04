@@ -30,6 +30,12 @@ Show all your current packages:
 usps track
 ```
 
+Add a name to a package:
+```sh
+usps name <tracking number> [name]
+# If you don't specify name, it will prompt for one.
+```
+
 ### Requirements
 
 Since this package uses selenium for challenge solving, you'll need to install a [Firefox-compatible browser](https://www.mozilla.org/en-US/firefox) and [geckodriver](https://github.com/mozilla/geckodriver/releases).  

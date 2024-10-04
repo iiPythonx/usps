@@ -17,8 +17,12 @@ app = typer.Typer(help = "A CLI for tracking packages from USPS.", pretty_except
 con = Console(highlight = False)
 
 # Handle commands
-def show_package(tracking_number: str, package: Package) -> None:
-    con.print(f"°︎ USPS [bright_blue]{tracking_number}[/] - [cyan]{package.state}[/]")
+def show_package(tracking_number: str, name: str | None, package: Package) -> None:
+    identifier = f"USPS [bright_blue]{tracking_number}[/]"
+    if name is not None:
+        identifier = f"{name} ({identifier})"
+
+    con.print(f"°︎ {identifier} - [cyan]{package.state}[/]")
     if package.expected:
         def ordinal(day: int) -> str:
             return str(day) + ("th" if 4 <= day % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th"))
@@ -58,19 +62,19 @@ def command_track(tracking_number: typing.Annotated[typing.Optional[str], typer.
     from .tracking import tracking
 
     if tracking_number is not None:
-        return show_package(tracking_number, tracking.track_package(tracking_number))
+        return show_package(tracking_number, None, tracking.track_package(tracking_number))
 
     tracking_numbers = packages.load()
     if not tracking_numbers:
         return con.print("[red]× You don't have any default packages to track.[/]")
 
-    for package in tracking_numbers:
-        show_package(package, tracking.track_package(package))
+    for package, name in tracking_numbers.items():
+        show_package(package, name, tracking.track_package(package))
 
 @app.command("add")
 def command_add(tracking_numbers: list[str]) -> None:
     """Add tracking numbers to your package list."""
-    packages.save(packages.load() + list(tracking_numbers))
+    packages.save(packages.load() | {number: "" for number in tracking_numbers})
     for tracking_number in tracking_numbers:
         con.print(f"[green]✓ USPS {tracking_number} added to your package list.[/]")
 
@@ -80,7 +84,35 @@ def command_remove(tracking_numbers: list[str]) -> None:
     current_packages = packages.load()
     for tracking_number in tracking_numbers:
         if tracking_number in current_packages:
-            current_packages.remove(tracking_number)
+            del current_packages[tracking_number]
             con.print(f"[green]✓ USPS {tracking_number} removed from your package list.[/]")
 
     packages.save(current_packages)
+
+@app.command("name")
+def command_name(
+    tracking_number: str,
+    name: typing.Annotated[typing.Optional[str], typer.Argument()] = None,
+    erase: typing.Annotated[bool, typer.Option(help = "Remove the name from the given package.")] = False,
+) -> None:
+    """Assign a name to the given package, updating if it already has one. Package
+    will be saved to the package list if it hasn't been added previously."""
+    original_packages = packages.load()
+    if erase:
+        if tracking_number in original_packages:
+            return con.print(f"[green]✓ USPS {tracking_number}'s name has been erased.[/]")
+
+        return con.print(f"[red]× USPS {tracking_number} is not in the package list.[/]")
+
+    if name is None:
+        name = con.input("[cyan]Choose a package name: ")
+        if not name.strip():
+            return con.print("[red]× Name cannot be an empty string.[/]")
+
+    if tracking_number not in original_packages:
+        con.print(f"[green]✓ USPS {tracking_number} added to your package list with name [cyan]'{name}'[/].[/]")
+
+    else:
+        con.print(f"[green]✓ USPS {tracking_number} updated with name [cyan]'{name}'[/].[/]")
+
+    packages.save(original_packages | {tracking_number: name})

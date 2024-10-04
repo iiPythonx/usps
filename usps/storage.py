@@ -14,13 +14,13 @@ class PackageStorage():
     def __init__(self) -> None:
         self.package_file = usps_global / "packages.json"
 
-    def load(self) -> list[str]:
+    def load(self) -> dict[str, str]:
         if not self.package_file.is_file():
-            return []
+            return {}
 
         return json.loads(self.package_file.read_text())
 
-    def save(self, packages: list[str]) -> None:
+    def save(self, packages: typing.Mapping[str, str  | None]) -> None:
         self.package_file.write_text(json.dumps(packages, indent = 4))
 
 packages = PackageStorage()
