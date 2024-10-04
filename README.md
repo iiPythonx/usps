@@ -5,6 +5,9 @@ A CLI for tracking packages from USPS.
 ### Installation
 
 ```sh
+uv pip install usps-cli
+
+# or, install from dev:
 uv pip install git+https://github.com/iiPythonx/usps
 ```
 
@@ -33,7 +36,13 @@ usps track
 Add a name to a package:
 ```sh
 usps name <tracking number> [name]
+
 # If you don't specify name, it will prompt for one.
+$ usps name <tracking number>
+Enter name: ...
+
+# You can remove a name as well:
+usps name --erase <tracking number>
 ```
 
 ### Requirements
