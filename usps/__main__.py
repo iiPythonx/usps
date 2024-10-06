@@ -30,7 +30,7 @@ def show_package(tracking_number: str, name: str | None, package: Package) -> No
 
         date = package.expected[0].strftime("%A, %B {day}").format(day = ordinal(package.expected[0].day))
 
-        # Show delivery time based on whether theres 1 or 2
+        # Show delivery time based on whether there's 1 or 2
         times = [time.strftime("%I:%M %p") for time in package.expected]
         if len(package.expected) == 1:
             con.print(f"\t[green]Estimated delivery on {date} by {times[0]}.[/]")
@@ -48,7 +48,7 @@ def show_package(tracking_number: str, name: str | None, package: Package) -> No
     con.print(*[f"\t[yellow]{line}[/]" for line in textwrap.wrap(package.last_status, 102)], "", sep = "\n")
 
     # Print out steps
-    location_max = len(max(package.steps, key = lambda package: len(package.location)).location)
+    location_max = len(max(package.steps, key = lambda _package: len(_package.location)).location)
     for step in package.steps:
         location_block = f"[yellow]{step.location}[/]{' ' * (location_max - len(step.location))}"
         con.print(f"\t[cyan]{step.details}[/]\t{location_block}\t[bright_blue]{get_delta(step.location, step.time)}[/]")

@@ -10,23 +10,23 @@ usps_global = Path.home() / ".local/share/usps"
 usps_global.mkdir(exist_ok = True, parents = True)
 
 # Handle saving/loading current packages
-class PackageStorage():
+class PackageStorage:
     def __init__(self) -> None:
         self.package_file = usps_global / "packages.json"
 
-    def load(self) -> dict[str, str]:
+    def load(self) -> typing.Mapping[str, str | None]:
         if not self.package_file.is_file():
             return {}
 
         return json.loads(self.package_file.read_text())
 
-    def save(self, packages: typing.Mapping[str, str  | None]) -> None:
-        self.package_file.write_text(json.dumps(packages, indent = 4))
+    def save(self, _packages: typing.Mapping[str, str | None]) -> None:
+        self.package_file.write_text(json.dumps(_packages, indent = 4))
 
 packages = PackageStorage()
 
 # Handle caching cookies/headers
-class SecurityStorage():
+class SecurityStorage:
     def __init__(self) -> None:
         self.security_file = usps_global / "security.json"
 
@@ -36,7 +36,7 @@ class SecurityStorage():
 
         return json.loads(self.security_file.read_text())
 
-    def save(self, data: dict[str, typing.Any]) -> None:
-        self.security_file.write_text(json.dumps(data, indent = 4))
+    def save(self, _security: dict[str, typing.Any]) -> None:
+        self.security_file.write_text(json.dumps(_security, indent = 4))
 
 security = SecurityStorage()
