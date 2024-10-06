@@ -36,7 +36,7 @@ class SecurityStorage:
 
         return json.loads(self.security_file.read_text())
 
-    def save(self, _security: dict[str, typing.Any]) -> None:
+    def save(self, _security: dict[str, str]) -> None:
         self.security_file.write_text(json.dumps(_security, indent = 4))
 
 security = SecurityStorage()

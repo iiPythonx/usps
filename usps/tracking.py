@@ -1,4 +1,3 @@
-# type: ignore
 # Copyright (c) 2024 iiPython
 
 # Modules
@@ -6,7 +5,7 @@ from datetime import datetime
 from dataclasses import dataclass
 
 from requests import Session
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from rich.status import Status
 
 from seleniumwire import webdriver
@@ -19,6 +18,15 @@ from usps.storage import security
 
 # Exceptions
 class NonExistentPackage(Exception):
+    pass
+
+class MissingElement(Exception):
+    pass
+
+class InvalidElementType(Exception):
+    pass
+
+class NoTextInElement(Exception):
     pass
 
 # Typing
@@ -35,7 +43,8 @@ class Package:
     state: str
     steps: list[Step]
 
-# Mappings
+# Constants
+USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0"
 USPS_STEP_DETAIL_MAPPING = {
     "usps picked up item": "Picked Up",
     "usps awaiting item": "Awaiting Item",
@@ -53,16 +62,25 @@ USPS_STEP_DETAIL_MAPPING = {
     "departed usps facility": "Left Facility"
 }
 
+# BS4 wrappers
+def get_text(element: Tag | None = None, alt: bool = False) -> str:
+    if element is None:
+        raise MissingElement
+
+    if alt is True:
+        text = element.find(text = True, recursive = False)
+        if text is None:
+            raise NoTextInElement
+
+        return str(text)
+
+    return element.text
+
 # Main class
 class USPSTracking:
     def __init__(self) -> None:
         self.session = Session()
-        self.headers, self.cookies = {}, {}
-
-        # Fetch existing security data
-        security_data = security.load()
-        if security_data:
-            self.headers, self.cookies = security_data["headers"], security_data["cookies"]
+        self.cookies = security.load() or {}
 
     @staticmethod
     def __map_step_details(details: str) -> str:
@@ -90,13 +108,7 @@ class USPSTracking:
             WebDriverWait(instance, 5).until(
                 expected_conditions.presence_of_element_located((By.CLASS_NAME, "tracking-number"))
             )
-            for request in instance.requests:
-                if request.url == url:
-                    self.headers = request.headers
-                    self.cookies = {c["name"]: c["value"] for c in instance.get_cookies()}
-                    security.save({"headers": dict(self.headers), "cookies": self.cookies})
-                    break
-
+            security.save({c["name"]: c["value"] for c in instance.get_cookies()})
             html = instance.page_source  # This saves us a request
             instance.quit()
             return html
@@ -107,59 +119,61 @@ class USPSTracking:
         # Load data from page
         if not self.cookies:
 
-            # Handle generating cookies / headers
+            # Handle generating cookies
             page = BeautifulSoup(self.__generate_security(url), "html.parser")
 
         else:
             page = BeautifulSoup(
-                self.session.get(url, cookies = self.cookies, headers = self.headers).text,
+                self.session.get(url, cookies = self.cookies, headers = {"User-Agent": USER_AGENT}).text,
                 "html.parser"
             )
             if "originalHeaders" in str(page):
                 page = BeautifulSoup(self.__generate_security(url), "html.parser")
 
+        # Handle element searching
+        def find_object(class_name: str, parent: Tag | None = None) -> Tag | None:
+            element = (parent or page).find(attrs = {"class": class_name})
+            if element is None:
+                return element
+
+            if not isinstance(element, Tag):
+                raise InvalidElementType(class_name)
+
+            return element
+
         # Check header for possible issues
-        if page.find(attrs = {"class": "red-banner"}):
+        if find_object("red-banner"):
             raise NonExistentPackage
 
         # Start fetching data
-        has_delivery_date = page.find(attrs = {"class": "day"})
+        has_delivery_date = find_object("day")
         month, year = "", ""
         if has_delivery_date:
-            month, year = page.find(attrs = {"class": "month_year"}).text.split("\n")[0].strip().split(" ")
+            month, year = get_text(find_object("month_year")).split("\n")[0].strip().split(" ")
 
         # Handle fetching the current step
-        external_shipment = page.find(attrs = {"class": "preshipment-status"})
-        if not external_shipment:
-
-            # Catch services like Amazon, where the status is still not in the element
-            # like it is with normal in-network packages.
-            external_shipment = page.find(attrs = {"class": "shipping-partner-status"})
-
-        # If this is an external shipment, check OUTSIDE the element to find the status.
-        if external_shipment:
-            current_step = external_shipment.find(attrs = {"class": "tb-status"}).text
+        if find_object("preshipment-status") or find_object("shipping-partner-status"):
+            current_step = get_text(find_object("tb-status"))
 
         else:
-            current_step = page.find(attrs = {"class": "current-step"}).find(attrs = {"class": "tb-status"}).text
+            current_step = get_text(find_object("tb-status", find_object("current-step")))
 
         # Figure out delivery times
-        times = page.find(attrs = {"class": "time"}).find(text = True, recursive = False).split(" and ") \
-            if has_delivery_date else []
+        times = get_text(find_object("time"), alt = True).split(" and ") if has_delivery_date else []
 
         # Fetch steps
         steps = []
         for step in page.find_all(attrs = {"class": "tb-step"}):
             if "toggle-history-container" not in step["class"]:
-                location = step.find(attrs = {"class": "tb-location"})
+                location = find_object("tb-location", step)
                 if location is not None:
-                    location = location.text.strip()
+                    location = get_text(location).strip()
 
                 steps.append(Step(
-                    self.__map_step_details(step.find(attrs = {"class": "tb-status-detail"}).text),
+                    self.__map_step_details(get_text(find_object("tb-status-detail", step))),
                     location or "UNKNOWN LOCATION",
                     datetime.strptime(
-                        self.__sanitize(step.find(attrs = {"class": "tb-date"}).text),
+                        self.__sanitize(get_text(find_object("tb-date", step))),
                         "%B %d, %Y, %I:%M %p"
                     )
                 ))
@@ -170,14 +184,14 @@ class USPSTracking:
             # Estimated delivery
             [
                 datetime.strptime(
-                    f"{page.find(attrs = {'class': 'date'}).text.zfill(2)} {month} {year} {time}",
+                    f"{get_text(find_object('date')).zfill(2)} {month} {year} {time}",
                     "%d %B %Y %I:%M%p"
                 )
                 for time in times
             ] if has_delivery_date else None,
 
             # Last status "banner"
-            page.find(attrs = {"class": "banner-content"}).text.strip(),
+            get_text(find_object("banner-content")).strip(),
 
             # Current state based on current step
             current_step,
