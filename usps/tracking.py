@@ -18,7 +18,7 @@ from selenium.webdriver.firefox.options import Options
 from usps.storage import security
 
 # Exceptions
-class NonExistantPackage(Exception):
+class NonExistentPackage(Exception):
     pass
 
 # Typing
@@ -48,11 +48,13 @@ USPS_STEP_DETAIL_MAPPING = {
     "out for delivery": "Delivering",
     "in transit to next facility": "In Transit",
     "arriving on time": "Package On Time",
-    "accepted at usps origin facility": "Accepted"
+    "accepted at usps origin facility": "Accepted",
+    "arrived at usps facility": "At Facility",
+    "departed usps facility": "Left Facility"
 }
 
 # Main class
-class USPSTracking():
+class USPSTracking:
     def __init__(self) -> None:
         self.session = Session()
         self.headers, self.cookies = {}, {}
@@ -62,7 +64,8 @@ class USPSTracking():
         if security_data:
             self.headers, self.cookies = security_data["headers"], security_data["cookies"]
 
-    def __map_step_details(self, details: str) -> str:
+    @staticmethod
+    def __map_step_details(details: str) -> str:
         if "between" in details.lower():
             return "Delivering"
 
@@ -70,8 +73,9 @@ class USPSTracking():
         return USPS_STEP_DETAIL_MAPPING.get(details, " ".join([
             word.capitalize() for word in details.split(" ")
         ]))
-    
-    def __sanitize(self, text: str) -> str:
+
+    @staticmethod
+    def __sanitize(text: str) -> str:
         lines = text.split("\n")
         return " ".join(lines[:(2 if "\t" in lines[0] else 1)]).replace("\t", "").strip()
 
@@ -83,7 +87,9 @@ class USPSTracking():
             instance.get(url)
 
             # Wait until we can confirm the JS has loaded the new page
-            WebDriverWait(instance, 5).until(expected_conditions.presence_of_element_located((By.CLASS_NAME, "tracking-number")))
+            WebDriverWait(instance, 5).until(
+                expected_conditions.presence_of_element_located((By.CLASS_NAME, "tracking-number"))
+            )
             for request in instance.requests:
                 if request.url == url:
                     self.headers = request.headers
@@ -114,7 +120,7 @@ class USPSTracking():
 
         # Check header for possible issues
         if page.find(attrs = {"class": "red-banner"}):
-            raise NonExistantPackage
+            raise NonExistentPackage
 
         # Start fetching data
         has_delivery_date = page.find(attrs = {"class": "day"})
@@ -138,8 +144,8 @@ class USPSTracking():
             current_step = page.find(attrs = {"class": "current-step"}).find(attrs = {"class": "tb-status"}).text
 
         # Figure out delivery times
-        if has_delivery_date:
-            times = page.find(attrs = {"class": "time"}).find(text = True, recursive = False).split(" and ")
+        times = page.find(attrs = {"class": "time"}).find(text = True, recursive = False).split(" and ") \
+            if has_delivery_date else []
 
         # Fetch steps
         steps = []
@@ -163,7 +169,10 @@ class USPSTracking():
 
             # Estimated delivery
             [
-                datetime.strptime(f"{page.find(attrs = {'class': 'date'}).text.zfill(2)} {month} {year} {time}", "%d %B %Y %I:%M%p")
+                datetime.strptime(
+                    f"{page.find(attrs = {'class': 'date'}).text.zfill(2)} {month} {year} {time}",
+                    "%d %B %Y %I:%M%p"
+                )
                 for time in times
             ] if has_delivery_date else None,
 
