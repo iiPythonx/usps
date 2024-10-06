@@ -8,7 +8,7 @@ from requests import Session
 from bs4 import BeautifulSoup, Tag
 from rich.status import Status
 
-from seleniumwire import webdriver
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
