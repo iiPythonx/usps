@@ -108,8 +108,12 @@ class USPSTracking:
             WebDriverWait(instance, 5).until(
                 expected_conditions.presence_of_element_located((By.CLASS_NAME, "tracking-number"))
             )
-            security.save({c["name"]: c["value"] for c in instance.get_cookies()})
-            html = instance.page_source  # This saves us a request
+
+            self.cookies = {c["name"]: c["value"] for c in instance.get_cookies()}
+            security.save(self.cookies)
+
+            # Return page source (saves us a request)
+            html = instance.page_source
             instance.quit()
             return html
 
