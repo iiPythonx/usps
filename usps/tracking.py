@@ -84,7 +84,7 @@ class USPSTracking:
 
     @staticmethod
     def __map_step_details(details: str) -> str:
-        if "between" in details.lower():
+        if "expected delivery" in details.lower():
             return "Delivering"
 
         details = details.split(", ")[-1].lower()
@@ -188,7 +188,7 @@ class USPSTracking:
             # Estimated delivery
             [
                 datetime.strptime(
-                    f"{get_text(find_object('date')).zfill(2)} {month} {year} {time}",
+                    f"{get_text(find_object('date')).zfill(2)} {month} {year} {time.strip()}",
                     "%d %B %Y %I:%M%p"
                 )
                 for time in times

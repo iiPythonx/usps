@@ -49,7 +49,7 @@ def show_package(tracking_number: str, name: str | None, package: Package) -> No
 
     # Print out steps
     location_max = len(max(package.steps, key = lambda _package: len(_package.location)).location)
-    for step in package.steps:
+    for step in package.steps[:10]:
         location_block = f"[yellow]{step.location}[/]{' ' * (location_max - len(step.location))}"
         con.print(f"\t[cyan]{step.details}[/]\t{location_block}\t[bright_blue]{get_delta(step.location, step.time)}[/]")
 
@@ -75,7 +75,7 @@ def command_track(tracking_number: typing.Annotated[typing.Optional[str], typer.
 @app.command("add")
 def command_add(tracking_numbers: list[str]) -> None:
     """Add tracking numbers to your package list."""
-    packages.save(packages.load() | {number: "" for number in tracking_numbers})
+    packages.save(packages.load() | {number: None for number in tracking_numbers})
     for tracking_number in tracking_numbers:
         con.print(f"[green]✓ USPS {tracking_number} added to your package list.[/]")
 

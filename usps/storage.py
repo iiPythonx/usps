@@ -2,7 +2,6 @@
 
 # Modules
 import json
-import typing
 from pathlib import Path
 
 # Initialization
@@ -14,13 +13,13 @@ class PackageStorage:
     def __init__(self) -> None:
         self.package_file = usps_global / "packages.json"
 
-    def load(self) -> typing.Mapping[str, str | None]:
+    def load(self) -> dict[str, str | None]:
         if not self.package_file.is_file():
             return {}
 
         return json.loads(self.package_file.read_text())
 
-    def save(self, _packages: typing.Mapping[str, str | None]) -> None:
+    def save(self, _packages: dict[str, str | None]) -> None:
         self.package_file.write_text(json.dumps(_packages, indent = 4))
 
 packages = PackageStorage()
