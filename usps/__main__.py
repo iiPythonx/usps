@@ -1,6 +1,7 @@
 # Copyright (c) 2024 iiPython
 
 # Modules
+import time
 import typing
 import textwrap
 
@@ -56,7 +57,10 @@ def show_package(tracking_number: str, name: str | None, package: Package) -> No
     print()
 
 @app.command("track")
-def command_track(tracking_number: typing.Annotated[typing.Optional[str], typer.Argument()] = None) -> None:
+def command_track(
+    tracking_number: typing.Annotated[typing.Optional[str], typer.Argument()] = None,
+    refresh: typing.Annotated[typing.Optional[int], typer.Option(help = "Auto refresh the tracking information every x minutes.")] = None,
+) -> None:
     """Track the specified tracking numbers, tracking your package list if no tracking
     number is specified."""
 
@@ -69,8 +73,17 @@ def command_track(tracking_number: typing.Annotated[typing.Optional[str], typer.
     if not tracking_numbers:
         return con.print("[red]× You don't have any default packages to track.[/]")
 
-    for package, name in tracking_numbers.items():
-        show_package(package, name, tracking.track_package(package))
+    if refresh is not None:
+        while True:
+            print("\033[H\033[2J", end = "")
+            for package, name in tracking_numbers.items():
+                show_package(package, name, tracking.track_package(package))
+
+            time.sleep(refresh * 60)
+
+    else:
+        for package, name in tracking_numbers.items():
+            show_package(package, name, tracking.track_package(package))
 
 @app.command("add")
 def command_add(tracking_numbers: list[str]) -> None:
