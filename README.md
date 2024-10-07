@@ -15,17 +15,17 @@ uv pip install git+https://github.com/iiPythonx/usps
 
 Get the tracking information for a package:
 ```sh
-usps track <tracking number>
+usps track 9400100000000000000000
 ```
 
 Add a tracking number to your package list:
 ```sh
-usps add <tracking number>
+usps add 9400100000000000000000
 ```
 
 Remove a tracking number from your package list:
 ```sh
-usps remove <tracking number>
+usps remove 9400100000000000000000
 ```
 
 Show all your current packages:
@@ -35,15 +35,19 @@ usps track
 
 Add a name to a package:
 ```sh
-usps name <tracking number> [name]
+$ usps name 9400100000000000000000 "Amazon Package"
 
 # If you don't specify name, it will prompt for one.
-$ usps name <tracking number>
-Enter name: ...
-
-# You can remove a name as well:
-usps name --erase <tracking number>
+$ usps name 9400100000000000000000
+Choose a package name: Amazon Package
 ```
+
+Remove the name from a package:
+```sh
+usps name --erase 9400100000000000000000
+```
+
+For more details, run `usps --help`.
 
 ### Requirements
 
@@ -58,7 +62,7 @@ I tried to make a basic web scraper for the USPS website months ago, only to fin
 Instead of trying to reverse engineer their client, I made this instead.
 
 How it works:
-- Selenium goes to the USPS tracking website, completing the JS challenge and logging the request data
+- Selenium goes to the USPS tracking website, completing the JS challenge and saving the cookies
 - This client saves that request data to a JSON file for reuse (speeds up the client dramatically)
 - Next, requests pulls the page from USPS using our saved cookies and parses it with BeautifulSoup
 - Apply some basic scraping and there you go, a USPS tracking client
