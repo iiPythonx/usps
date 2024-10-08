@@ -17,7 +17,7 @@ from selenium.webdriver.firefox.options import Options
 from usps.storage import security
 
 # Exceptions
-class NonExistentPackage(Exception):
+class StatusNotAvailable(Exception):
     pass
 
 class MissingElement(Exception):
@@ -147,8 +147,9 @@ class USPSTracking:
             return element
 
         # Check header for possible issues
-        if find_object("red-banner"):
-            raise NonExistentPackage
+        error_banner = find_object("red-banner")
+        if error_banner is not None:
+            raise StatusNotAvailable(get_text(find_object("banner-header", error_banner)).strip())
 
         # Start fetching data
         has_delivery_date = find_object("day")

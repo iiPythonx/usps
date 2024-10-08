@@ -9,22 +9,28 @@ import typer
 from rich.console import Console
 
 from usps.storage import packages
-from usps.tracking import Package
 
 from . import __version__
 from .utils import get_delta
+from .tracking import StatusNotAvailable, tracking
 
 # Initialization
 app = typer.Typer(help = "A CLI for tracking packages from USPS.", pretty_exceptions_show_locals = False)
 con = Console(highlight = False)
 
 # Handle commands
-def show_package(tracking_number: str, name: str | None, package: Package) -> None:
+def show_package(tracking_number: str, name: str | None) -> None:
     identifier = f"USPS [bright_blue]{tracking_number}[/]"
     if name is not None:
         identifier = f"{name} ({identifier})"
 
-    con.print(f"°︎ {identifier} - [cyan]{package.state}[/]")
+    try:
+        package = tracking.track_package(tracking_number)
+        con.print(f"°︎ {identifier} - [cyan]{package.state}[/]")
+
+    except StatusNotAvailable as failure:
+        return con.print(f"°︎ {identifier} - [red]{failure}[/]")
+    
     if package.expected:
         def ordinal(day: int) -> str:
             return str(day) + ("th" if 4 <= day % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th"))
@@ -64,10 +70,8 @@ def command_track(
     """Track the specified tracking numbers, tracking your package list if no tracking
     number is specified."""
 
-    from .tracking import tracking
-
     if tracking_number is not None:
-        return show_package(tracking_number, None, tracking.track_package(tracking_number))
+        return show_package(tracking_number, None)
 
     tracking_numbers = packages.load()
     if not tracking_numbers:
@@ -77,13 +81,13 @@ def command_track(
         while True:
             print("\033[H\033[2J", end = "")
             for package, name in tracking_numbers.items():
-                show_package(package, name, tracking.track_package(package))
+                show_package(package, name)
 
             time.sleep(refresh * 60)
 
     else:
         for package, name in tracking_numbers.items():
-            show_package(package, name, tracking.track_package(package))
+            show_package(package, name)
 
 @app.command("add")
 def command_add(tracking_numbers: list[str]) -> None:
