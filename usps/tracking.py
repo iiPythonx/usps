@@ -177,7 +177,7 @@ class USPSTracking:
 
                 steps.append(Step(
                     self.__map_step_details(get_text(find_object("tb-status-detail", step))),
-                    location or "UNKNOWN LOCATION",
+                    location or "",
                     datetime.strptime(
                         self.__sanitize(get_text(find_object("tb-date", step))),
                         "%B %d, %Y, %I:%M %p"
