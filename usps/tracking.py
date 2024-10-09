@@ -60,7 +60,8 @@ USPS_STEP_DETAIL_MAPPING = {
     "accepted at usps origin facility": "Accepted",
     "arrived at usps facility": "At Facility",
     "departed usps facility": "Left Facility",
-    "package acceptance pending": "Accepted"
+    "package acceptance pending": "Accepted",
+    "garage / other door / other location at address": "Delivered"
 }
 
 # BS4 wrappers
