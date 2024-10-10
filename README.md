@@ -1,6 +1,6 @@
 # iiPythonx / USPS
 
-A CLI for tracking packages from USPS.
+A CLI for tracking packages from USPS (with crude support for UPS packages).
 
 ### Installation
 
@@ -12,6 +12,9 @@ uv pip install git+https://github.com/iiPythonx/usps
 ```
 
 ### Usage
+
+> [!IMPORTANT]  
+> For UPS packages, USPS-cli only support the `1Z` version of UPS tracking numbers right now.
 
 Get the tracking information for a package:
 ```sh
@@ -47,9 +50,12 @@ Remove the name from a package:
 usps name --erase 9400100000000000000000
 ```
 
-For more details, run `usps --help`.
+For more details, run `usps --help`.  
 
 ### Requirements
+
+> [!NOTE]  
+> If you **only** plan to track **UPS** packages, you can skip installing a selenium driver.
 
 Since this package uses selenium for challenge solving, you'll need to install a [Firefox-compatible browser](https://www.mozilla.org/en-US/firefox) and [geckodriver](https://github.com/mozilla/geckodriver/releases).  
 Feel free to modify the code to use Chromium instead if you prefer it.
