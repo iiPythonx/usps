@@ -1,9 +1,8 @@
 # Copyright (c) 2024 iiPython
 
 # Modules
-from time import localtime
 from zoneinfo import ZoneInfo
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
 # Timezones
 TIMEZONE_MAPPING = {
@@ -58,7 +57,7 @@ TIMEZONE_MAPPING = {
     "WI": ZoneInfo("US/Central"),
     "WY": ZoneInfo("US/Mountain")
 }
-LOCAL_TIMEZONE = timezone(timedelta(seconds = localtime().tm_gmtoff))
+LOCAL_TIMEZONE = datetime.now().astimezone().tzinfo
 
 # Actual utilities
 def pluralize(item: int) -> str:
@@ -68,17 +67,21 @@ def get_delta(location: str, time: datetime) -> str:
     state, original_time = None, None
 
     # Calculate the timezone for the given location
-    chunks = location.encode().replace(b"\xc2\xa0", b" ").decode().split(" ")
-    for chunk in chunks:
-        if chunk in TIMEZONE_MAPPING:
-            state = chunk
-
-    if state in TIMEZONE_MAPPING:
-        original_time = time.replace(tzinfo = TIMEZONE_MAPPING[state])
-        time = original_time.astimezone(LOCAL_TIMEZONE)
+    if time.tzinfo is not None and time.tzinfo.utcoffset(time) is not None:
+        original_time, time = time, time.astimezone(LOCAL_TIMEZONE)
 
     else:
-        time = time.astimezone(LOCAL_TIMEZONE)
+        chunks = location.encode().replace(b"\xc2\xa0", b" ").decode().split(" ")
+        for chunk in chunks:
+            if chunk in TIMEZONE_MAPPING:
+                state = chunk
+
+        if state in TIMEZONE_MAPPING:
+            original_time = time.replace(tzinfo = TIMEZONE_MAPPING[state])
+            time = original_time.astimezone(LOCAL_TIMEZONE)
+
+        else:
+            time = time.astimezone(LOCAL_TIMEZONE)
 
     delta = datetime.now(LOCAL_TIMEZONE) - time
     time_string = f"{time.strftime('%D %H:%M:%S')} {original_time.strftime('%Z') if original_time else 'N/A'}"

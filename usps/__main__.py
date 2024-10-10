@@ -12,7 +12,8 @@ from usps.storage import packages
 
 from . import __version__
 from .utils import get_delta
-from .tracking import StatusNotAvailable, tracking
+from .tracking import track_package, get_service
+from .tracking.exceptions import StatusNotAvailable
 
 # Initialization
 app = typer.Typer(help = "A CLI for tracking packages from USPS.", pretty_exceptions_show_locals = False)
@@ -20,12 +21,12 @@ con = Console(highlight = False)
 
 # Handle commands
 def show_package(tracking_number: str, name: str | None) -> None:
-    identifier = f"USPS [bright_blue]{tracking_number}[/]"
+    identifier = f"{get_service(tracking_number)} [bright_blue]{tracking_number}[/]"
     if name is not None:
         identifier = f"{name} ({identifier})"
 
     try:
-        package = tracking.track_package(tracking_number)
+        package = track_package(tracking_number)
         con.print(f"°︎ {identifier} - [cyan]{package.state}[/]")
 
     except StatusNotAvailable as failure:

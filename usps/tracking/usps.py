@@ -2,7 +2,6 @@
 
 # Modules
 from datetime import datetime
-from dataclasses import dataclass
 
 from requests import Session
 from bs4 import BeautifulSoup, Tag
@@ -15,36 +14,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.firefox.options import Options
 
 from usps.storage import security
+from . import USER_AGENT, Package, Step
+from .exceptions import MissingElement, NoTextInElement, InvalidElementType, StatusNotAvailable
 
-# Exceptions
-class StatusNotAvailable(Exception):
-    pass
-
-class MissingElement(Exception):
-    pass
-
-class InvalidElementType(Exception):
-    pass
-
-class NoTextInElement(Exception):
-    pass
-
-# Typing
-@dataclass
-class Step:
-    details: str
-    location: str
-    time: datetime
-
-@dataclass
-class Package:
-    expected: list[datetime] | None
-    last_status: str
-    state: str
-    steps: list[Step]
-
-# Constants
-USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0"
+# Handle status mappings
 USPS_STEP_DETAIL_MAPPING = {
     "usps picked up item": "Picked Up",
     "usps awaiting item": "Awaiting Item",
@@ -206,5 +179,3 @@ class USPSTracking:
             # Step data
             steps
         )
-
-tracking = USPSTracking()
