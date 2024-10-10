@@ -11,21 +11,24 @@ from .exceptions import StatusNotAvailable
 
 # Main class
 class UPSTracking:
-    def __init__(self) -> None:
-        self.session = Session()
+    _session: Session | None = None
 
-    def track_package(self, tracking_number: str) -> Package:
-        if not self.session.cookies:
-            self.session.get("https://www.ups.com/track", headers = {"User-Agent": USER_AGENT})
+    @classmethod
+    def track_package(cls, tracking_number: str) -> Package:
+        if cls._session is None:
+            cls._session = Session()
 
-        response = self.session.post(
+        if not cls._session.cookies:
+            cls._session.get("https://www.ups.com/track", headers = {"User-Agent": USER_AGENT})
+
+        response = cls._session.post(
             "https://webapis.ups.com/track/api/Track/GetStatus?loc=en_US",
             json = {"Locale": "en_US", "TrackingNumber": [tracking_number]},
             headers = {
                 "Accept-Encoding": "gzip, deflate, br, zstd",
                 "Accept-Language": "en-US,en;q=0.5",
                 "User-Agent": USER_AGENT,
-                "X-XSRF-TOKEN": self.session.cookies["X-XSRF-TOKEN-ST"]
+                "X-XSRF-TOKEN": cls._session.cookies["X-XSRF-TOKEN-ST"]
             }
         ).json()
         if response["statusCode"] != "200":

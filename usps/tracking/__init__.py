@@ -26,11 +26,10 @@ USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/1
 from .ups import UPSTracking  # noqa: E402
 from .usps import USPSTracking  # noqa: E402
 
-UPS, USPS = UPSTracking(), USPSTracking()
 UPS_PACKAGE_REGEX = re.compile(r"1Z[A-Z0-9]{6}[0-9]{2}[0-9]{7}[0-9]")
 
 def get_service(tracking_number: str) -> str:
     return "UPS" if re.match(UPS_PACKAGE_REGEX, tracking_number) else "USPS"
 
 def track_package(tracking_number: str) -> Package:
-    return (UPS if get_service(tracking_number) == "UPS" else USPS).track_package(tracking_number)
+    return (UPSTracking if get_service(tracking_number) == "UPS" else USPSTracking).track_package(tracking_number)

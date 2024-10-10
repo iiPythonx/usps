@@ -53,9 +53,8 @@ def get_text(element: Tag | None = None, alt: bool = False) -> str:
 
 # Main class
 class USPSTracking:
-    def __init__(self) -> None:
-        self.session = Session()
-        self.cookies = security.load() or {}
+    _session: Session | None = None
+    _cookies: dict = {}
 
     @staticmethod
     def __map_step_details(details: str) -> str:
@@ -72,7 +71,8 @@ class USPSTracking:
         lines = text.split("\n")
         return " ".join(lines[:(2 if "\t" in lines[0] else 1)]).replace("\t", "").strip()
 
-    def __generate_security(self, url: str) -> str:
+    @classmethod
+    def __generate_security(cls, url: str) -> str:
         with Status("[cyan]Generating cookies...", spinner = "arc"):
             options = Options()
             options.add_argument("--headless")
@@ -84,30 +84,35 @@ class USPSTracking:
                 expected_conditions.presence_of_element_located((By.CLASS_NAME, "tracking-number"))
             )
 
-            self.cookies = {c["name"]: c["value"] for c in instance.get_cookies()}
-            security.save(self.cookies)
+            cls._cookies = {c["name"]: c["value"] for c in instance.get_cookies()}
+            security.save(cls._cookies)
 
             # Return page source (saves us a request)
             html = instance.page_source
             instance.quit()
             return html
 
-    def track_package(self, tracking_number: str) -> Package:
+    @classmethod
+    def track_package(cls, tracking_number: str) -> Package:
+        if cls._session is None:
+            cls._session = Session()
+            cls._cookies = security.load()
+
         url = f"https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1={tracking_number}"
 
         # Load data from page
-        if not self.cookies:
+        if not cls._cookies:
 
             # Handle generating cookies
-            page = BeautifulSoup(self.__generate_security(url), "html.parser")
+            page = BeautifulSoup(cls.__generate_security(url), "html.parser")
 
         else:
             page = BeautifulSoup(
-                self.session.get(url, cookies = self.cookies, headers = {"User-Agent": USER_AGENT}).text,
+                cls._session.get(url, cookies = cls._cookies, headers = {"User-Agent": USER_AGENT}).text,
                 "html.parser"
             )
             if "originalHeaders" in str(page):
-                page = BeautifulSoup(self.__generate_security(url), "html.parser")
+                page = BeautifulSoup(cls.__generate_security(url), "html.parser")
 
         # Handle element searching
         def find_object(class_name: str, parent: Tag | None = None) -> Tag | None:
@@ -150,10 +155,10 @@ class USPSTracking:
                     location = get_text(location).strip()
 
                 steps.append(Step(
-                    self.__map_step_details(get_text(find_object("tb-status-detail", step))),
+                    cls.__map_step_details(get_text(find_object("tb-status-detail", step))),
                     location or "",
                     datetime.strptime(
-                        self.__sanitize(get_text(find_object("tb-date", step))),
+                        cls.__sanitize(get_text(find_object("tb-date", step))),
                         "%B %d, %Y, %I:%M %p"
                     )
                 ))
