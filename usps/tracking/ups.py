@@ -36,6 +36,9 @@ class UPSTracking:
             case "we have your package":
                 return "Has Package"
 
+            case "departed from facility":
+                return "Left Facility"
+
             case _:
                 return milestone
 
@@ -87,6 +90,9 @@ class UPSTracking:
         latest_scan = data["shipmentProgressActivities"][0]
         status_name = latest_scan["activityScan"]
         match data["packageStatusCode"]:
+            case "010":
+                status_name = "Your package is in transit to the destination."
+
             case "160":
                 status_name = f"Your package has arrived in {latest_scan['location']} and is getting ready for shipping."
 
@@ -97,7 +103,7 @@ class UPSTracking:
             [x for x in data["milestones"] if x["isCurrent"]][-1]["name"],
             [
                 Step(
-                    cls.__map_milestone_name(step["milestoneName"]["name"]),
+                    cls.__map_milestone_name((step["milestoneName"] or {"name": step["activityScan"]})["name"]),
                     step["location"].replace("United States", "US").upper() if "," in step["location"] else "",
                     datetime.strptime(f"{step['gmtDate']} {step['gmtTime']}", "%Y%m%d %H:%M:%S").replace(tzinfo = LOCAL_TIMEZONE) +\
                          timedelta(hours = int(step["gmtOffset"].split(":")[0]))
