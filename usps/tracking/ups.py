@@ -28,6 +28,7 @@ UPS_CMS_MAPPINGS = {
 # Main class
 class UPSTracking:
     _session: Session | None = None
+    _failcount: int = 0
 
     @staticmethod
     def __map_milestone_name(milestone: str) -> str:
@@ -46,16 +47,27 @@ class UPSTracking:
         if not cls._session.cookies:
             cls._session.get("https://www.ups.com/track", headers = {"User-Agent": USER_AGENT})
 
-        response = cls._session.post(
-            "https://webapis.ups.com/track/api/Track/GetStatus?loc=en_US",
-            json = {"Locale": "en_US", "TrackingNumber": [tracking_number]},
-            headers = {
-                "Accept-Encoding": "gzip, deflate, br, zstd",
-                "Accept-Language": "en-US,en;q=0.5",
-                "User-Agent": USER_AGENT,
-                "X-XSRF-TOKEN": cls._session.cookies["X-XSRF-TOKEN-ST"]
-            }
-        ).json()
+        try:
+            response = cls._session.post(
+                "https://webapis.ups.com/track/api/Track/GetStatus?loc=en_US",
+                json = {"Locale": "en_US", "TrackingNumber": [tracking_number]},
+                headers = {
+                    "Accept-Encoding": "gzip, deflate, br, zstd",
+                    "Accept-Language": "en-US,en;q=0.5",
+                    "User-Agent": USER_AGENT,
+                    "X-XSRF-TOKEN": cls._session.cookies["X-XSRF-TOKEN-ST"]
+                },
+                timeout = 5
+            ).json()
+        
+        except Exception:  # Too many types for me to care about right now
+            if cls._failcount == 4:
+                raise StatusNotAvailable("API request failed")
+
+            cls._failcount += 1
+            cls._session.cookies.clear()
+            return cls.track_package(tracking_number)
+
         if response["statusCode"] != "200":
             raise StatusNotAvailable(response["statusText"])
 
