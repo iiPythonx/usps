@@ -86,7 +86,7 @@ class UPSTracking:
             [
                 Step(
                     cls.__map_milestone_name(step["milestoneName"]["name"]),
-                    step["location"].replace("United States", "US") if "," in step["location"] else "",
+                    step["location"].replace("United States", "US").upper() if "," in step["location"] else "",
                     datetime.strptime(f"{step['gmtDate']} {step['gmtTime']}", "%Y%m%d %H:%M:%S").replace(tzinfo = LOCAL_TIMEZONE) +\
                          timedelta(hours = int(step["gmtOffset"].split(":")[0]))
                 )
