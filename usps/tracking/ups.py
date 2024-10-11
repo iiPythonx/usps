@@ -24,6 +24,11 @@ UPS_CMS_MAPPINGS = {
     "cms.stapp.nov": "November",
     "cms.stapp.dec": "December"
 }
+UPS_MILESTONE_MAPPINGS = {
+    "we have your package": "Has Package",
+    "departed from facility": "Left Facility",
+    "arrived at facility": "At Facility"
+}
 
 # Main class
 class UPSTracking:
@@ -32,15 +37,7 @@ class UPSTracking:
 
     @staticmethod
     def __map_milestone_name(milestone: str) -> str:
-        match milestone.lower():
-            case "we have your package":
-                return "Has Package"
-
-            case "departed from facility":
-                return "Left Facility"
-
-            case _:
-                return milestone
+        return UPS_MILESTONE_MAPPINGS.get(milestone.lower(), milestone)
 
     @classmethod
     def track_package(cls, tracking_number: str) -> Package:
