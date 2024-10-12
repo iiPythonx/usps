@@ -162,12 +162,13 @@ class USPSTracking:
                 if location is not None:
                     location = get_text(location).strip()
 
+                date_time = cls.__sanitize(get_text(find_object("tb-date", step)))
                 steps.append(Step(
                     cls.__map_step_details(get_text(find_object("tb-status-detail", step))),
                     location or "",
                     datetime.strptime(
-                        cls.__sanitize(get_text(find_object("tb-date", step))),
-                        "%B %d, %Y, %I:%M %p"
+                        date_time,
+                        "%B %d, %Y, %I:%M %p" if ":" in date_time else "%B %d, %Y"
                     )
                 ))
 
