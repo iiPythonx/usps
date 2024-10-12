@@ -14,7 +14,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.firefox.options import Options
 
 from usps.storage import security
-from . import USER_AGENT_CHROME, Package, Step
+from . import USER_AGENT, Package, Step
 from .exceptions import MissingElement, NoTextInElement, InvalidElementType, StatusNotAvailable
 
 # Handle status mappings
@@ -80,7 +80,7 @@ class USPSTracking:
 
             # Setup profile with user agent
             profile = webdriver.FirefoxProfile()
-            profile.set_preference("general.useragent.override", USER_AGENT_CHROME)
+            profile.set_preference("general.useragent.override", USER_AGENT)
     
             # Handle instance creation
             options.profile = profile
@@ -116,7 +116,7 @@ class USPSTracking:
 
         else:
             page = BeautifulSoup(
-                cls._session.get(url, cookies = cls._cookies, headers = {"User-Agent": USER_AGENT_CHROME}).text,
+                cls._session.get(url, cookies = cls._cookies, headers = {"User-Agent": USER_AGENT}).text,
                 "html.parser"
             )
             if "originalHeaders" in str(page):
