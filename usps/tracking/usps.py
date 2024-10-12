@@ -14,7 +14,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.firefox.options import Options
 
 from usps.storage import security
-from . import USER_AGENT, Package, Step
+from . import USER_AGENT_CHROME, Package, Step
 from .exceptions import MissingElement, NoTextInElement, InvalidElementType, StatusNotAvailable
 
 # Handle status mappings
@@ -34,7 +34,8 @@ USPS_STEP_DETAIL_MAPPING = {
     "arrived at usps facility": "At Facility",
     "departed usps facility": "Left Facility",
     "package acceptance pending": "Accepted",
-    "garage / other door / other location at address": "Delivered"
+    "garage / other door / other location at address": "Delivered",
+    "left with individual": "Delivered"
 }
 
 # BS4 wrappers
@@ -76,6 +77,13 @@ class USPSTracking:
         with Status("[cyan]Generating cookies...", spinner = "arc"):
             options = Options()
             options.add_argument("--headless")
+
+            # Setup profile with user agent
+            profile = webdriver.FirefoxProfile()
+            profile.set_preference("general.useragent.override", USER_AGENT_CHROME)
+    
+            # Handle instance creation
+            options.profile = profile
             instance = webdriver.Firefox(options = options)
             instance.get(url)
 
@@ -108,7 +116,7 @@ class USPSTracking:
 
         else:
             page = BeautifulSoup(
-                cls._session.get(url, cookies = cls._cookies, headers = {"User-Agent": USER_AGENT}).text,
+                cls._session.get(url, cookies = cls._cookies, headers = {"User-Agent": USER_AGENT_CHROME}).text,
                 "html.parser"
             )
             if "originalHeaders" in str(page):
