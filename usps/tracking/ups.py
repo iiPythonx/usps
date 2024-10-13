@@ -30,6 +30,18 @@ UPS_MILESTONE_MAPPINGS = {
     "arrived at facility": "At Facility"
 }
 
+# Headers that need to exist for UPS to respond
+# I'm not sure why they check *these* headers, but ¯\_(ツ)_/¯
+UPS_HEADERS = {
+    "Accept-Encoding": "gzip, deflate, br, zstd",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Sec-GPC": "1",
+    "User-Agent": USER_AGENT,
+}
+
 # Main class
 class UPSTracking:
     _session: Session | None = None
@@ -46,15 +58,12 @@ class UPSTracking:
 
         try:
             if not cls._session.cookies:
-                cls._session.get("https://www.ups.com/track", headers = {"User-Agent": USER_AGENT}, timeout = 5)
+                cls._session.get("https://www.ups.com/track", headers = UPS_HEADERS, timeout = 5)
 
             response = cls._session.post(
                 "https://webapis.ups.com/track/api/Track/GetStatus?loc=en_US",
                 json = {"Locale": "en_US", "TrackingNumber": [tracking_number]},
-                headers = {
-                    "Accept-Encoding": "gzip, deflate, br, zstd",
-                    "Accept-Language": "en-US,en;q=0.5",
-                    "User-Agent": USER_AGENT,
+                headers = UPS_HEADERS | {
                     "X-XSRF-TOKEN": cls._session.cookies["X-XSRF-TOKEN-ST"]
                 },
                 timeout = 5
