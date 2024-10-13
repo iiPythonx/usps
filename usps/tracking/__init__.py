@@ -32,7 +32,7 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 from .ups import UPSTracking  # noqa: E402
 from .usps import USPSTracking  # noqa: E402
 
-UPS_PACKAGE_REGEX = re.compile(r"1Z[A-Z0-9]{6}[0-9]{2}[0-9]{7}[0-9]")
+UPS_PACKAGE_REGEX = re.compile(r"1Z[A-Z0-9]{6}[0-9]{10}")
 
 def get_service(tracking_number: str) -> str:
     return "UPS" if re.match(UPS_PACKAGE_REGEX, tracking_number) else "USPS"

@@ -58,7 +58,7 @@ class UPSTracking:
 
         try:
             if not cls._session.cookies:
-                cls._session.get("https://www.ups.com/track", headers = UPS_HEADERS, timeout = 5)
+                cls._session.get("https://www.ups.com/track", headers = UPS_HEADERS, timeout = 1)
 
             response = cls._session.post(
                 "https://webapis.ups.com/track/api/Track/GetStatus?loc=en_US",
@@ -66,7 +66,7 @@ class UPSTracking:
                 headers = UPS_HEADERS | {
                     "X-XSRF-TOKEN": cls._session.cookies["X-XSRF-TOKEN-ST"]
                 },
-                timeout = 5
+                timeout = 1
             ).json()
         
         except Exception:  # Too many types for me to care about right now
