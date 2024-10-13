@@ -1,6 +1,8 @@
 # Copyright (c) 2024 iiPython
 
 # Modules
+import os
+
 import re
 from datetime import datetime
 from dataclasses import dataclass
@@ -18,6 +20,10 @@ class Package:
     last_status: str
     state: str
     steps: list[Step]
+
+# Stop stats tracking by Selenium
+# Could also just manually specify geckodriver path but eh
+os.environ["SE_AVOID_STATS"] = "true"
 
 # Constants
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0"
