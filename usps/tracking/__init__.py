@@ -17,7 +17,7 @@ class Step:
 @dataclass
 class Package:
     expected: list[datetime] | None
-    last_status: str
+    last_status: str | None
     state: str
     steps: list[Step]
 

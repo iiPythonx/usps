@@ -53,7 +53,11 @@ def show_package(tracking_number: str, name: str | None) -> None:
         else:
             con.print("\t[red]No estimated delivery time yet.[/]")
 
-    con.print(*[f"\t[yellow]{line}[/]" for line in textwrap.wrap(package.last_status, 102)], "", sep = "\n")
+    con.print(
+        *[f"\t[yellow]{line}[/]" for line in textwrap.wrap(package.last_status, 102)] if package.last_status is not None else [],
+        "",
+        sep = "\n"
+    )
 
     # Print out steps
     location_max = len(max(package.steps, key = lambda _package: len(_package.location)).location)

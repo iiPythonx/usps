@@ -86,7 +86,7 @@ class UPSTracking:
 
         # Handle estimated delivery date
         estimated_delivery = None
-        if data["packageStatusTime"]:
+        if data["scheduledDeliveryDateDetail"]:
             delivery = data["scheduledDeliveryDateDetail"]
             month, year = UPS_CMS_MAPPINGS[delivery["monthCMSKey"]], datetime.now().year
             estimated_delivery = [
@@ -100,6 +100,9 @@ class UPSTracking:
         match data["packageStatusCode"]:
             case "010":
                 status_name = "Your package is in transit to the destination."
+
+            case "011":
+                status_name = None
 
             case "021":
                 status_name = "Your package is out for delivery."
