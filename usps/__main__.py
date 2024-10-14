@@ -11,7 +11,7 @@ from rich.console import Console
 from usps.storage import packages
 
 from usps import __version__
-from usps.utils import get_delta
+from usps.timezones import get_delta
 from usps.tracking import track_package, get_service, StatusNotAvailable
 
 # Initialization
