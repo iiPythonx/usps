@@ -14,8 +14,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.firefox.options import Options
 
 from usps.storage import security
-from . import USER_AGENT, Package, Step
-from .exceptions import MissingElement, NoTextInElement, InvalidElementType, StatusNotAvailable
+from usps.tracking import USER_AGENT, Package, Step, StatusNotAvailable
 
 # Handle status mappings
 USPS_STEP_DETAIL_MAPPING = {
@@ -38,6 +37,16 @@ USPS_STEP_DETAIL_MAPPING = {
     "garage / other door / other location at address": "Delivered",
     "left with individual": "Delivered"
 }
+
+# Exceptions
+class MissingElement(Exception):
+    pass
+
+class InvalidElementType(Exception):
+    pass
+
+class NoTextInElement(Exception):
+    pass
 
 # BS4 wrappers
 def get_text(element: Tag | None = None, alt: bool = False) -> str:

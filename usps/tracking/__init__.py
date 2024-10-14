@@ -2,7 +2,6 @@
 
 # Modules
 import os
-
 import re
 from datetime import datetime
 from dataclasses import dataclass
@@ -21,6 +20,10 @@ class Package:
     state: str
     steps: list[Step]
     service: str | None
+
+# Global exceptions
+class StatusNotAvailable(Exception):
+    pass
 
 # Stop stats tracking by Selenium
 # Could also just manually specify geckodriver path but eh

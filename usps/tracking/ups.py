@@ -6,8 +6,7 @@ from datetime import datetime, timedelta
 from requests import Session
 
 from usps.utils import LOCAL_TIMEZONE
-from . import USER_AGENT, Package, Step
-from .exceptions import StatusNotAvailable
+from usps.tracking import USER_AGENT, Package, Step, StatusNotAvailable
 
 # Handle mapping
 UPS_CMS_MAPPINGS = {

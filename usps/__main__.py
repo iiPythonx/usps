@@ -10,10 +10,9 @@ from rich.console import Console
 
 from usps.storage import packages
 
-from . import __version__
-from .utils import get_delta
-from .tracking import track_package, get_service
-from .tracking.exceptions import StatusNotAvailable
+from usps import __version__
+from usps.utils import get_delta
+from usps.tracking import track_package, get_service, StatusNotAvailable
 
 # Initialization
 app = typer.Typer(help = "A CLI for tracking packages from USPS.", pretty_exceptions_show_locals = False)
