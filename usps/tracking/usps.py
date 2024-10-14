@@ -192,5 +192,9 @@ class USPSTracking:
             current_step,
 
             # Step data
-            steps
+            steps,
+
+            # "Postal Product"
+            get_text(find_object("product_info")).split(":")[1].split("  ")[0].strip()
+            if find_object("product_info") else None
         )

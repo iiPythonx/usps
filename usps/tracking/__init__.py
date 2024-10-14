@@ -20,6 +20,7 @@ class Package:
     last_status: str | None
     state: str
     steps: list[Step]
+    service: str | None
 
 # Stop stats tracking by Selenium
 # Could also just manually specify geckodriver path but eh

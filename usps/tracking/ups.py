@@ -126,5 +126,6 @@ class UPSTracking:
                          timedelta(hours = int(step["gmtOffset"].split(":")[0]))
                 )
                 for step in data["shipmentProgressActivities"]
-            ]
+            ],
+            data["additionalInformation"]["serviceInformation"]["serviceName"]
         )

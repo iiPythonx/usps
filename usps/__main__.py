@@ -27,7 +27,7 @@ def show_package(tracking_number: str, name: str | None) -> None:
 
     try:
         package = track_package(tracking_number)
-        con.print(f"°︎ {identifier} - [cyan]{package.state}[/]")
+        con.print(f"°︎ {identifier}{f', [bright_blue]{package.service}[/]' if package.service is not None else ''} - [cyan]{package.state}[/]")
 
     except StatusNotAvailable as failure:
         return con.print(f"°︎ {identifier} - [red]{failure}[/]")
