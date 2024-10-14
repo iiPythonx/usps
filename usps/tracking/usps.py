@@ -21,8 +21,11 @@ from .exceptions import MissingElement, NoTextInElement, InvalidElementType, Sta
 USPS_STEP_DETAIL_MAPPING = {
     "usps picked up item": "Picked Up",
     "usps awaiting item": "Awaiting Item",
+    "arrived at usps facility": "At Facility",
     "arrived at usps regional origin facility": "At Facility",
     "arrived at usps regional facility": "At Facility",
+    "arrived at usps regional destination facility": "At Facility",
+    "departed usps facility": "Left Facility",
     "departed usps regional facility": "Left Facility",
     "departed post office": "Left Office",
     "usps in possession of item": "Possessed",
@@ -31,8 +34,6 @@ USPS_STEP_DETAIL_MAPPING = {
     "in transit to next facility": "In Transit",
     "arriving on time": "Package On Time",
     "accepted at usps origin facility": "Accepted",
-    "arrived at usps facility": "At Facility",
-    "departed usps facility": "Left Facility",
     "package acceptance pending": "Accepted",
     "garage / other door / other location at address": "Delivered",
     "left with individual": "Delivered"

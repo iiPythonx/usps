@@ -27,7 +27,9 @@ UPS_CMS_MAPPINGS = {
 UPS_MILESTONE_MAPPINGS = {
     "we have your package": "Has Package",
     "departed from facility": "Left Facility",
-    "arrived at facility": "At Facility"
+    "arrived at facility": "At Facility",
+    "processing at ups facility": "Processing",
+    "out for delivery": "Delivering"
 }
 
 # Headers that need to exist for UPS to respond
@@ -98,6 +100,12 @@ class UPSTracking:
         match data["packageStatusCode"]:
             case "010":
                 status_name = "Your package is in transit to the destination."
+
+            case "021":
+                status_name = "Your package is out for delivery."
+
+            case "072":
+                status_name = "Your package was loaded onto a delivery vehicle and is on the way to the destination."
 
             case "160":
                 status_name = f"Your package has arrived in {latest_scan['location']} and is getting ready for shipping."
