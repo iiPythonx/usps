@@ -73,6 +73,10 @@ class USPSTracking:
         lines = text.split("\n")
         return " ".join(lines[:(2 if "\t" in lines[0] else 1)]).replace("\t", "").strip()
 
+    @staticmethod
+    def __newline_grab(text: str, index: int) -> str:
+        return [item.strip() for item in text.split("\n") if item.strip()][index - 1]
+
     @classmethod
     def __generate_security(cls, url: str) -> str:
         with Status("[cyan]Generating cookies...", spinner = "arc"):
@@ -195,6 +199,6 @@ class USPSTracking:
             steps,
 
             # "Postal Product"
-            get_text(find_object("product_info")).split(":")[1].split("  ")[0].strip()
+            cls.__newline_grab(get_text(find_object("product_info")), 2)
             if find_object("product_info") else None
         )
