@@ -57,18 +57,20 @@ For more details, run `usps --help`.
 > [!NOTE]  
 > If you **only** plan to track **UPS** packages, you can skip installing a selenium driver.
 
-Since this package uses selenium for challenge solving, you'll need to install a [Firefox-compatible browser](https://www.mozilla.org/en-US/firefox) and [geckodriver](https://github.com/mozilla/geckodriver/releases).  
+Since this package uses selenium for challenge solving, you'll need to install a [Gecko-based browser](https://www.mozilla.org/en-US/firefox) and [geckodriver](https://github.com/mozilla/geckodriver/releases).  
 Feel free to modify the code to use Chromium instead if you prefer it.
 
 If you're on Arch: `sudo pacman -S firefox geckodriver`,
 
-### Inspiration
+### How it works
 
-I tried to make a basic web scraper for the USPS website months ago, only to find out that its security is crazy.  
-Instead of trying to reverse engineer their client, I made this instead.
+- Selenium goes to the USPS tracking website, completing the JS challenge and saving the cookies.
+- This client saves that request data to a JSON file for reuse (speeds up the client dramatically).
+- Next, requests pulls the page from USPS using our saved cookies and parses it with BeautifulSoup.
+- Apply some basic scraping and there you go, a USPS tracking client.
 
-How it works:
-- Selenium goes to the USPS tracking website, completing the JS challenge and saving the cookies
-- This client saves that request data to a JSON file for reuse (speeds up the client dramatically)
-- Next, requests pulls the page from USPS using our saved cookies and parses it with BeautifulSoup
-- Apply some basic scraping and there you go, a USPS tracking client
+It's worth noting I scrape USPS because their APIs [get basically no support](https://github.com/USPS/api-examples/issues/28), [require the creation of business accounts](https://developer.usps.com/getting-started) and filling out every piece of information about yourself, and even then you have to [request explicit access to the tracking API](https://developer.usps.com/quotaform).
+
+### Triggered?
+
+If you're a USPS web tools representative or something and have a problem with this repository, shoot me an email: [ben@iipython.dev](mailto:ben@iipython.dev).
