@@ -35,7 +35,8 @@ USPS_STEP_DETAIL_MAPPING = {
     "accepted at usps origin facility": "Accepted",
     "package acceptance pending": "Accepted",
     "garage / other door / other location at address": "Delivered",
-    "left with individual": "Delivered"
+    "left with individual": "Delivered",
+    "redelivery scheduled for next business day": "Rescheduled"
 }
 
 # Exceptions
@@ -147,11 +148,6 @@ class USPSTracking:
 
             return element
 
-        # Check header for possible issues
-        error_banner = find_object("red-banner")
-        if error_banner is not None:
-            raise StatusNotAvailable(get_text(find_object("banner-header", error_banner)).strip())
-
         # Start fetching data
         has_delivery_date = find_object("day")
         month, year = "", ""
@@ -159,11 +155,17 @@ class USPSTracking:
             month, year = get_text(find_object("month_year")).split("\n")[0].strip().split(" ")
 
         # Handle fetching the current step
-        if find_object("preshipment-status") or find_object("shipping-partner-status"):
-            current_step = get_text(find_object("tb-status"))
+        try:
+            if any(find_object(x) for x in ["preshipment-status", "shipping-partner-status", "delivery-attempt-status"]):
+                current_step = get_text(find_object("tb-status"))
 
-        else:
-            current_step = get_text(find_object("tb-status", find_object("current-step")))
+            else:
+                current_step = get_text(find_object("tb-status", find_object("current-step")))
+
+        except MissingElement:
+
+            # If the steps aren't listed, assume there's an error message
+            raise StatusNotAvailable(get_text(find_object("banner-header", find_object("red-banner"))).strip())
 
         # Figure out delivery times
         times = get_text(find_object("time"), alt = True).split(" and ") if has_delivery_date else []
@@ -185,6 +187,12 @@ class USPSTracking:
                         "%B %d, %Y, %I:%M %p" if ":" in date_time else "%B %d, %Y"
                     )
                 ))
+
+        # Fetch postal product
+        product_info = find_object("product_info")
+        postal_product = cls.__newline_grab(get_text(product_info), 2) if product_info is not None else None
+        if postal_product and ":" in postal_product:
+            postal_product = None
 
         # Bundle together
         return Package(
@@ -208,6 +216,5 @@ class USPSTracking:
             steps,
 
             # "Postal Product"
-            cls.__newline_grab(get_text(find_object("product_info")), 2)
-            if find_object("product_info") else None
+            postal_product
         )
