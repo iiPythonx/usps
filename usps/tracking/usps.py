@@ -30,6 +30,7 @@ USPS_STEP_DETAIL_MAPPING = {
     "usps in possession of item": "Possessed",
     "arrived at post office": "At Office",
     "out for delivery": "Delivering",
+    "awaiting delivery": "Delayed  ",
     "in transit to next facility": "In Transit",
     "arriving on time": "Package On Time",
     "accepted at usps origin facility": "Accepted",
@@ -156,7 +157,7 @@ class USPSTracking:
 
         # Handle fetching the current step
         try:
-            if any(find_object(x) for x in ["preshipment-status", "shipping-partner-status", "delivery-attempt-status"]):
+            if any(find_object(x) for x in ["preshipment-status", "shipping-partner-status", "delivery-attempt-status", "addressee-unknown-status"]):
                 current_step = get_text(find_object("tb-status"))
 
             else:
