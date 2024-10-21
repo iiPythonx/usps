@@ -34,10 +34,11 @@ USPS_STEP_DETAIL_MAPPING = {
     "in transit to next facility": "In Transit",
     "arriving on time": "Package On Time",
     "accepted at usps origin facility": "Accepted",
-    "package acceptance pending": "Accepted",
+    "accepted at usps destination facility": "Accepted",
+    "package acceptance pending": "Arrived",
     "garage / other door / other location at address": "Delivered",
     "left with individual": "Delivered",
-    "redelivery scheduled for next business day": "Rescheduled"
+    "redelivery scheduled for next business day": "Rescheduled",
 }
 
 # Exceptions
