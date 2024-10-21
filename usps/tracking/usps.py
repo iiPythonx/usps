@@ -39,6 +39,8 @@ USPS_STEP_DETAIL_MAPPING = {
     "garage / other door / other location at address": "Delivered",
     "left with individual": "Delivered",
     "redelivery scheduled for next business day": "Rescheduled",
+    "available for pickup": "Available", 
+    "reminder to schedule redelivery of your item": "Reminder"
 }
 
 # Exceptions
@@ -178,11 +180,21 @@ class USPSTracking:
             if "toggle-history-container" not in step["class"]:
                 location = find_object("tb-location", step)
                 if location is not None:
-                    location = get_text(location).strip()
+                    location, location_data = "", [line.strip() for line in get_text(location).strip().split("\n") if line.strip()]
+                    if len(location_data) > 1:
+                        location = f"{location_data[1]} {location_data[2]} {location_data[3]}"
+
+                    elif location_data:
+                        location = location_data[0]
+
+                step_detail = get_text(find_object("tb-status-detail", step))
+                match step_detail.lower():
+                    case "reminder to schedule redelivery of your item":
+                        location = "SCHEDULE REDELIVERY"
 
                 date_time = cls.__sanitize(get_text(find_object("tb-date", step)))
                 steps.append(Step(
-                    cls.__map_step_details(get_text(find_object("tb-status-detail", step))),
+                    cls.__map_step_details(step_detail),
                     location or "",
                     datetime.strptime(
                         date_time,
