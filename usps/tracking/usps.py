@@ -21,6 +21,7 @@ USPS_STEP_DETAIL_MAPPING = {
     "usps picked up item": "Picked Up",
     "usps awaiting item": "Awaiting Item",
     "arrived at usps facility": "At Facility",
+    "arrived at usps origin facility": "At Facility",
     "arrived at usps regional origin facility": "At Facility",
     "arrived at usps regional facility": "At Facility",
     "arrived at usps regional destination facility": "At Facility",
