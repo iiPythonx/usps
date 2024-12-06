@@ -6,10 +6,10 @@ authors = [
     { name = "iiPython", email = "ben@iipython.dev" }
 ]
 dependencies = [
-    "beautifulsoup4>=4.12.3",
     "click>=8.1.7",
     "requests>=2.32.3",
     "rich>=13.8.1",
+    "selectolax>=0.3.26",
     "selenium>=4.25.0",
     "typer>=0.12.5",
 ]
