@@ -4,7 +4,7 @@
 from datetime import datetime
 
 from rich.status import Status
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -88,11 +88,11 @@ class USPSTracking:
 
         # Load data from page
         if not cls._cookies:
-            tree = HTMLParser(cls.__generate_security(url))
+            tree = LexborHTMLParser(cls.__generate_security(url))
 
         else:
             response = SESSION.get(url, cookies = cls._cookies).text
-            tree = HTMLParser(response if "originalHeaders" not in response else cls.__generate_security(url))
+            tree = LexborHTMLParser(response if "originalHeaders" not in response else cls.__generate_security(url))
 
         if not tree.any_css_matches((  # pyright: ignore
             ".preshipment-status", ".shipping-partner-status", ".delivery-attempt-status", ".addressee-unknown-status", ".current-step"
