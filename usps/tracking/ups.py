@@ -3,10 +3,8 @@
 # Modules
 from datetime import datetime, timedelta
 
-from requests import Session
-
 from usps.timezones import LOCAL_TIMEZONE
-from usps.tracking import Package, Step, StatusNotAvailable
+from usps.tracking import SESSION, Package, Step, StatusNotAvailable
 
 # Handle mapping
 UPS_MILESTONE_MAPPINGS = {
@@ -19,7 +17,6 @@ UPS_MILESTONE_MAPPINGS = {
 
 # Main class
 class UPSTracking:
-    _session: Session | None = None
     _failcount: int = 0
 
     @staticmethod
@@ -28,18 +25,15 @@ class UPSTracking:
 
     @classmethod
     def track_package(cls, tracking_number: str) -> Package:
-        if cls._session is None:
-            cls._session = Session()
-
         try:
-            if not cls._session.cookies:
-                cls._session.get("https://www.ups.com/track", timeout = 1)
+            if "X-XSRF-TOKEN-ST" not in SESSION.cookies:
+                SESSION.get("https://www.ups.com/track", timeout = 1)
 
-            response = cls._session.post(
+            response = SESSION.post(
                 "https://webapis.ups.com/track/api/Track/GetStatus?loc=en_US",
                 json = {"Locale": "en_US", "TrackingNumber": [tracking_number]},
                 headers = {
-                    "X-XSRF-TOKEN": cls._session.cookies["X-XSRF-TOKEN-ST"]
+                    "X-XSRF-TOKEN": SESSION.cookies["X-XSRF-TOKEN-ST"]
                 },
                 timeout = 1
             ).json()
@@ -49,7 +43,9 @@ class UPSTracking:
                 raise StatusNotAvailable("API request failed")
 
             cls._failcount += 1
-            cls._session = Session()
+            if "X-XSRF-TOKEN-ST":
+                SESSION.cookies.pop("X-XSRF-TOKEN-ST")
+
             return cls.track_package(tracking_number)
 
         if response["statusCode"] != "200":
