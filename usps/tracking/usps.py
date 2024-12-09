@@ -39,6 +39,7 @@ USPS_STEP_DETAIL_MAPPING = {
     "accepted at usps origin facility":                 "Accepted",
     "accepted at usps destination facility":            "Accepted",
     "package acceptance pending":                       "Arrived",
+    "in/at mailbox":                                    "Delivered",
     "garage / other door / other location at address":  "Delivered",
     "left with individual":                             "Delivered",
     "redelivery scheduled for next business day":       "Rescheduled",
