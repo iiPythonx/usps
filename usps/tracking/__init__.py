@@ -11,17 +11,17 @@ from requests import Session
 # Typing
 @dataclass
 class Step:
-    details: str
-    location: str
-    time: datetime
+    details:    str
+    location:   str
+    time:       datetime | None
 
 @dataclass
 class Package:
-    expected: list[datetime] | None
-    last_status: str | None
-    state: str
-    steps: list[Step]
-    service: str | None
+    expected:       list[datetime] | None
+    last_status:    str | None
+    state:          str
+    steps:          list[Step]
+    service:        str | None
 
 # Global exceptions
 class StatusNotAvailable(Exception):

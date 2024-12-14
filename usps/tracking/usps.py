@@ -38,14 +38,19 @@ USPS_STEP_DETAIL_MAPPING = {
     "arriving on time":                                 "Package On Time",
     "accepted at usps origin facility":                 "Accepted",
     "accepted at usps destination facility":            "Accepted",
+    "acceptance":                                       "Accepted",
     "package acceptance pending":                       "Arrived",
     "in/at mailbox":                                    "Delivered",
     "garage / other door / other location at address":  "Delivered",
     "left with individual":                             "Delivered",
+    "front door/porch":                                 "Delivered",
     "redelivery scheduled for next business day":       "Rescheduled",
     "available for pickup":                             "Available", 
     "reminder to schedule redelivery of your item":     "Reminder",
-    "arriving late":                                    "Arriving Late"
+    "arriving late":                                    "Arriving Late",
+    "processed through facility":                       "Processed",
+    "processed through usps facility":                  "Processed",
+    "origin post is preparing shipment":                "Preparing"
 }
 
 # Main class
@@ -120,14 +125,18 @@ class USPSTracking:
             if details.lower() == "reminder to schedule redelivery of your item":
                 location = "SCHEDULE REDELIVERY"
 
+            detail_mapping = details.split(", ")[-1].lower()
+            if detail_mapping not in USPS_STEP_DETAIL_MAPPING:
+                print(f"Missing step mapping! Post this on GitHub: \"{detail_mapping}\" / \"{details}\"")
+
             steps.append(Step(
-                USPS_STEP_DETAIL_MAPPING.get(details.split(", ")[-1].lower(), "Unknown")
-                        if "expected delivery" not in details.lower() else "Delivering",
+                USPS_STEP_DETAIL_MAPPING.get(detail_mapping, "Unknown")
+                        if "expected delivery" not in detail_mapping.lower() else "Delivering",
                 location or "",
                 datetime.strptime(
                     time,
                     "%B %d, %Y, %I:%M %p" if ":" in time else "%B %d, %Y"
-                )
+                ) if time.strip() else None
             ))
 
         postal_product = tree.css_first(".product_info > li:first-child")

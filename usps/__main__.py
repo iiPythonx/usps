@@ -62,7 +62,7 @@ def show_package(tracking_number: str, name: str | None) -> None:
     location_max = len(max(package.steps, key = lambda _package: len(_package.location)).location)
     for step in package.steps[:10]:
         location_block = f"[yellow]{step.location}[/]{' ' * (location_max - len(step.location))}"
-        con.print(f"\t[cyan]{step.details}[/]\t{location_block}\t[bright_blue]{get_delta(step.location, step.time)}[/]")
+        con.print(f"\t[cyan]{step.details}[/]\t{location_block}\t[bright_blue]{get_delta(step.location, step.time) if step.time else ''}[/]")
 
     print()
 
