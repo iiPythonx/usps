@@ -1,6 +1,7 @@
 # iiPythonx / USPS
 
-A CLI for tracking packages from USPS (with crude support for UPS packages).
+A CLI for tracking packages from USPS (with crude support for UPS packages).  
+If you have any tracking numbers you're willing to share, please send them to [usps@iipython.dev](mailto:usps@iipython.dev).
 
 ### Installation
 
