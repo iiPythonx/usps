@@ -101,13 +101,16 @@ def command_add(tracking_numbers: list[str]) -> None:
         con.print(f"[green]✓ USPS {tracking_number} added to your package list.[/]")
 
 @app.command("remove")
-def command_remove(tracking_numbers: list[str]) -> None:
-    """Remove tracking numbers from your package list."""
+def command_remove(tracking_numbers_or_names: list[str]) -> None:
+    """Remove tracking numbers (or package names) from your package list."""
     current_packages = packages.load()
-    for tracking_number in tracking_numbers:
-        if tracking_number in current_packages:
-            del current_packages[tracking_number]
-            con.print(f"[green]✓ USPS {tracking_number} removed from your package list.[/]")
+    names_to_numbers = {v: k for k, v in current_packages.items()}
+
+    for identifier in tracking_numbers_or_names:
+        identifier = names_to_numbers.get(identifier, identifier)
+        if identifier in current_packages:
+            del current_packages[identifier]
+            con.print(f"[green]✓ USPS {identifier} removed from your package list.[/]")
 
     packages.save(current_packages)
 
@@ -139,7 +142,15 @@ def command_name(
 
     packages.save(original_packages | {tracking_number: name})
 
+@app.command("list")
+def command_list() -> None:
+    """List everything stored in the saved package list."""
+    tracked = {k: v or "N/A" for k, v in packages.load().items()}
+    longest_name = len(max(tracked, key = lambda tracking_number: len(tracked[tracking_number])))
+    for tracking_number, name in tracked.items():
+        con.print(f"°︎ {name}:{' ' * (longest_name - len(name) + 1)}[cyan]{get_service(tracking_number)}[/] [bright_blue]{tracking_number}[/]")
+
 @app.command("version")
 def command_version() -> None:
-    """Show the package version."""
+    """Show the CLI version."""
     con.print(f"[cyan]USPS-cli v{__version__} by iiPython[/]\n -> [yellow]https://github.com/iiPythonx/usps")
