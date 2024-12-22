@@ -146,9 +146,9 @@ def command_name(
 def command_list() -> None:
     """List everything stored in the saved package list."""
     tracked = {k: v or "N/A" for k, v in packages.load().items()}
-    longest_name = len(max(tracked, key = lambda tracking_number: len(tracked[tracking_number])))
+    longest = max(len(name) for name in tracked.values())
     for tracking_number, name in tracked.items():
-        con.print(f"°︎ {name}:{' ' * (longest_name - len(name) + 1)}[cyan]{get_service(tracking_number)}[/] [bright_blue]{tracking_number}[/]")
+        con.print(f"°︎ {name}:{' ' * (longest - len(name) + 1)}[cyan]{get_service(tracking_number)}[/] [bright_blue]{tracking_number}[/]")
 
 @app.command("version")
 def command_version() -> None:
