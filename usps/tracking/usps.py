@@ -103,7 +103,7 @@ class USPSTracking:
         if not tree.any_css_matches((  # pyright: ignore
             ".preshipment-status", ".shipping-partner-status", ".delivery-attempt-status", ".addressee-unknown-status", ".current-step"
         )):
-            raise StatusNotAvailable(tree.css_first(".red-banner > .banner-header").text())
+            raise StatusNotAvailable(tree.css_first(".red-banner > .banner-header").text(strip = True))
 
         # Start fetching data
         has_estimated_date = tree.css_matches(".date")
