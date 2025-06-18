@@ -64,7 +64,7 @@ def pluralize(item: int) -> str:
     return "s" if item > 1 else ""
 
 def get_delta(location: str, time: datetime) -> str:
-    state, original_time = None, None
+    state, original_time, zeroed = None, None, time.second == 0 and time.minute == 0 and time.hour == 0
 
     # Calculate the timezone for the given location
     if time.tzinfo is not None and time.tzinfo.utcoffset(time) is not None:
@@ -85,6 +85,10 @@ def get_delta(location: str, time: datetime) -> str:
 
     delta = datetime.now(LOCAL_TIMEZONE) - time
     time_string = time.strftime(f"%D %I:%M{':%S' if time.second else ''} %p {LOCAL_TIMEZONE if original_time else 'N/A'}")
+
+    # If it's perfectly midnight, assume this is an untimed step
+    if zeroed:
+        return f"???\t\t({time_string})"
 
     # Figure out delta
     delta_minutes = delta.seconds // 60

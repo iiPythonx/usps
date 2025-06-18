@@ -50,7 +50,8 @@ USPS_STEP_DETAIL_MAPPING = {
     "arriving late":                                    "Arriving Late",
     "processed through facility":                       "Processed",
     "processed through usps facility":                  "Processed",
-    "origin post is preparing shipment":                "Preparing"
+    "origin post is preparing shipment":                "Preparing",
+    "shipping label printed at post office":            "Label Printed"
 }
 
 # Main class
